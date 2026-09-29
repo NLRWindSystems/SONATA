@@ -38,7 +38,7 @@ jobs:
 
       - name: Download and install b3_secfem
         run: |
-          git clone git@github.com:gbarter/b3_secfem.git
+          git clone git@github.com:NLRWindSystems/b3_secfem.git
           cd b3_secfem
           pip install -e .
 
