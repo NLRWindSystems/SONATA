@@ -36,6 +36,12 @@ jobs:
           activate-environment: test
           auto-activate-base: false
 
+      - name: Install b3_mat dependency
+        run: |
+          git clone https://github.com/wr1/b3_mat.git
+          cd b3_mat
+          pip install -e .
+
       - name: Download and install anba
         run: |
           git clone https://github.com/ANBA4/anba4.git
