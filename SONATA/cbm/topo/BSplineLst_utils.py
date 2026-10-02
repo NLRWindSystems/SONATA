@@ -7,7 +7,7 @@ import numpy as np
 from OCC.Core.GCPnts import (GCPnts_AbscissaPoint,
                              GCPnts_QuasiUniformDeflection,)
 from OCC.Core.Geom import Geom_BSplineCurve, Geom_Curve
-from OCC.Core.Geom2d import (Geom2d_BSplineCurve, Geom2d_Curve, Handle_Geom2d_BSplineCurve_DownCast,)
+from OCC.Core.Geom2d import (Geom2d_BSplineCurve, Geom2d_Curve,)
 from OCC.Core.Geom2dAdaptor import Geom2dAdaptor_Curve
 from OCC.Core.Geom2dAPI import (Geom2dAPI_Interpolate,
                                 Geom2dAPI_ProjectPointOnCurve,Geom2dAPI_InterCurveCurve,)
@@ -147,7 +147,7 @@ def get_BSpline_length(BSpline):
 
 
 def copy_BSpline(BSpline):
-    BSplineCopy = Handle_Geom2d_BSplineCurve_DownCast(BSpline.Copy())
+    BSplineCopy = Geom2d_BSplineCurve.DownCast(BSpline.Copy())
     return BSplineCopy
 
 
@@ -350,7 +350,7 @@ def trim_BSplineLst(BSplineLst, S1, S2, start, end):
             First = item.FirstParameter()
             Last = item.LastParameter()
             if para1[0] == i and para2[0] != i:  # Okay
-                BSplineCopy = Handle_Geom2d_BSplineCurve_DownCast(item.Copy())
+                BSplineCopy = Geom2d_BSplineCurve.DownCast(item.Copy())
                 if isclose(para1[1], Last):
                     pass
                 elif isclose(para1[1], First):
@@ -361,26 +361,26 @@ def trim_BSplineLst(BSplineLst, S1, S2, start, end):
                     trimmed_BSplineLst.append(BSplineCopy)
 
             elif (para1[0] != i and para2[0] != i) and (para1[0] > i and para2[0] > i):
-                BSplineCopy = Handle_Geom2d_BSplineCurve_DownCast(item.Copy())
+                BSplineCopy = Geom2d_BSplineCurve.DownCast(item.Copy())
                 BSplineCopy.Segment(First, Last)
                 front_BSplineLst.append(BSplineCopy)
 
             elif (para1[0] != i and para2[0] != i) and (para1[0] < i and para2[0] < i):
-                BSplineCopy = Handle_Geom2d_BSplineCurve_DownCast(item.Copy())
+                BSplineCopy = Geom2d_BSplineCurve.DownCast(item.Copy())
                 BSplineCopy.Segment(First, Last)
                 rear_BSplineLst.append(BSplineCopy)
 
             elif para1[0] == i and para2[0] == i:  # Okay
-                BSplineCopy1 = Handle_Geom2d_BSplineCurve_DownCast(item.Copy())
+                BSplineCopy1 = Geom2d_BSplineCurve.DownCast(item.Copy())
                 BSplineCopy1.Segment(para1[1], Last)
                 trimmed_BSplineLst.append(BSplineCopy1)
-                BSplineCopy2 = Handle_Geom2d_BSplineCurve_DownCast(item.Copy())
+                BSplineCopy2 = Geom2d_BSplineCurve.DownCast(item.Copy())
                 BSplineCopy2.Segment(First, para2[1])
                 trimmed_BSplineLst.append(BSplineCopy2)
                 break
 
             elif para1[0] != i and para2[0] == i:  # Okay
-                BSplineCopy = Handle_Geom2d_BSplineCurve_DownCast(item.Copy())
+                BSplineCopy = Geom2d_BSplineCurve.DownCast(item.Copy())
                 BSplineCopy.Segment(First, para2[1])
                 front_BSplineLst.append(BSplineCopy)
                 # break
@@ -416,7 +416,7 @@ def trim_BSplineLst(BSplineLst, S1, S2, start, end):
             First = item.FirstParameter()
             Last = item.LastParameter()
             if para1[0] == i and para2[0] != i:
-                BSplineCopy = Handle_Geom2d_BSplineCurve_DownCast(item.Copy())
+                BSplineCopy = Geom2d_BSplineCurve.DownCast(item.Copy())
                 if isclose(para1[1], Last):
                     pass
                 elif isclose(para1[1], First):
@@ -427,18 +427,18 @@ def trim_BSplineLst(BSplineLst, S1, S2, start, end):
                     trimmed_BSplineLst.append(BSplineCopy)
 
             elif (para1[0] != i and para2[0] != i) and (para1[0] < i and para2[0] > i):
-                BSplineCopy = Handle_Geom2d_BSplineCurve_DownCast(item.Copy())
+                BSplineCopy = Geom2d_BSplineCurve.DownCast(item.Copy())
                 BSplineCopy.Segment(First, Last)
                 trimmed_BSplineLst.append(BSplineCopy)
 
             elif para1[0] == i and para2[0] == i:
-                BSplineCopy = Handle_Geom2d_BSplineCurve_DownCast(item.Copy())
+                BSplineCopy = Geom2d_BSplineCurve.DownCast(item.Copy())
                 BSplineCopy.Segment(para1[1], para2[1])
                 trimmed_BSplineLst.append(BSplineCopy)
                 break
 
             elif para1[0] != i and para2[0] == i:
-                BSplineCopy = Handle_Geom2d_BSplineCurve_DownCast(item.Copy())
+                BSplineCopy = Geom2d_BSplineCurve.DownCast(item.Copy())
                 if isclose(para2[1], Last):
                     trimmed_BSplineLst.append(BSplineCopy)
                 else:

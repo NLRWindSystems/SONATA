@@ -36,6 +36,12 @@ jobs:
           activate-environment: test
           auto-activate-base: false
 
+      - name: Download and install b3_mat
+        run: |
+          git clone https://github.com/NLRWindSystems/b3_mat.git
+          cd b3_mat
+          pip install -e .
+      
       - name: Download and install b3_secfem
         run: |
           git clone https://github.com/NLRWindSystems/b3_secfem.git
