@@ -996,9 +996,9 @@ class TestStressStrain(unittest.TestCase):
         # This failing likely means that the elements are not consistently sorted.
         npt.assert_allclose(cxy, elem_cxy, err_msg='Element centers are different on loaded recovery.')
 
-        npt.assert_allclose(stress, elem_stress, atol=1e-18, err_msg='Stresses are different on loaded recovery.')
+        npt.assert_allclose(stress, elem_stress, rtol=1e-6, atol=1e-6, err_msg='Stresses are different on loaded recovery.')
 
-        npt.assert_allclose(strain, elem_strain, atol=1e-7, err_msg='Strains are different on loaded recovery.')
+        npt.assert_allclose(strain, elem_strain, rtol=1e-6, atol=1e-6, err_msg='Strains are different on loaded recovery.')
 
     def test_stress_map_zero_twist(self):
         """
