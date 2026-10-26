@@ -22,6 +22,8 @@ SONATA is primarily developed with the support of the U.S. Department of Energy 
 ## Installation
 SONATA can be run on mac and linux machines. No Windows installation is supported at the moment. We make use of Anaconda, which is a commonly used package manager for Python. Download and install the latest anaconda version [here](https://docs.anaconda.com/anaconda/install/)
 
+If you are trying to install SONATA on NLR HPC system Kestrel, scroll to the bottom before proceeding.
+
 First setup an anaconda environment, here named sonata-env, activate it, and add the pythonocc library (v7.4.1).
 You should do this in the folder that you want to clone SONATA to.
 
@@ -110,3 +112,29 @@ Detailed instructions can be found [here](examples/2_IEA22MW/README.md). Further
 **Pflumm, T., Rex, W., Hajek, M.:** Propagation of Material and Manufacturing Uncertainties in Composite Helicopter Rotor Blades, 45th European Rotorcraft Forum, Warsaw, Poland, 2019 [[more…\]](https://mediatum.ub.tum.de/1520025) [BibTeX\]](https://mediatum.ub.tum.de/export/1520025/bibtex)
 
 **Porter, J. H., Mace, T., Bortolotti, P., et al.:** Prediction of structural damping in a composite structure from coupon tests, 2025, Preprint. [[link]](https://doi.org/10.2139/ssrn.5408061)
+
+
+## Kestrel environment
+To install SONATA on Kestrel, make sure to use the following pinned versions in the environment.yaml file. Once done, go back to the installation instructions.
+
+```
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - fenics=2019.1.0
+  - intervaltree=3.1.0
+  - mshr=2019.1.0
+  - pip=25.2
+  - pythonocc-core=7.9.0
+  - pyyaml=6.0.2
+  - python=3.10.18
+  - pip:
+    - shapely==2.1.1
+    - triangle==20230923
+    - windIO==2.1.1
+
+variables:
+  PIP_EXTRA_INDEX_URL: https://pypi.org/simple
+```
