@@ -4,9 +4,15 @@ import numpy as np
 from SONATA.cbm.mesh.mesh_core import gen_core_cells
 from SONATA.cbm.mesh.mesh_utils import (grab_nodes_on_BSplineLst, remove_dublicate_nodes,
     remove_duplicates_from_list_preserving_order,)
+
+from OCC.Core.gp import gp_Vec2d
+
+
+
 from SONATA.cbm.topo.BSplineLst_utils import (copy_BSplineLst,
                                               get_BSplineLst_Pnt2d,
                                               reverse_BSplineLst,
+                                              get_BSplineLst_D2,
                                               trim_BSplineLst,)
 from SONATA.cbm.topo.layer import Layer
 from SONATA.cbm.topo.layer_utils import get_layer
@@ -169,6 +175,31 @@ class Segment(object):
             end = layer.S2
 
         return (BSplineLst, start, end)
+
+    def det_weight_Pnt2d(self, s, t):
+        """
+        determine the position of the 2d Point that describes the balance
+        weight
+
+        Parameters
+        --------
+        s : float
+            nondimensional s position between Start S1 and End S2
+        t : float
+            distance in normaldirection left of the boundary_BesplineLst
+
+        Returns:
+        -------
+        p1 : gp_Pnt2d
+
+        """
+        p0, v1, v2 = get_BSplineLst_D2(self.BSplineLst, s, 0, 1)
+        # print('det_weight_Pnt2d:', p0.Coord(), 's', s)
+        v = gp_Vec2d(v1.Y(), -v1.X())
+        v.Normalize()
+        v.Multiply(t)
+        p1 = p0.Translated(v)
+        return p1
 
     def get_Pnt2d(self, S, SegmentLst, WebLst=None):
         """returns a Pnt2d for the coresponding layer number and the coordinate S"""

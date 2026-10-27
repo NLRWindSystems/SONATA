@@ -117,7 +117,7 @@ Loads_dict = {"Forces":[0.0,0.0,0.0],"Moments":[0.0,1.0e3,0.0]}
 # Set damping for BeamDyn input file
 mu = np.zeros(6)
 
-beam_struct_eval(flags_dict, Loads_dict, radial_stations, job, run_dir,
+beam_struct_eval(job_name, flags_dict, Loads_dict, radial_stations, job, run_dir,
                  job_str, mu)
 
 # ===== PLOTS ===== #

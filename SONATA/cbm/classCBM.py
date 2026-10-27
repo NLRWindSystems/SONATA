@@ -23,9 +23,14 @@ from OCC.Core.gp import gp_Ax2
 from SONATA.cbm.cbm_utl import trsf_sixbysix
 from SONATA.cbm.classBeamSectionalProps import BeamSectionalProps
 from SONATA.cbm.classCBMConfig import CBMConfig
+
 from SONATA.cbm.display.display_mesh import plot_cells
 from SONATA.cbm.mesh.cell import Cell
 from SONATA.cbm.mesh.consolidate_mesh import consolidate_mesh_on_web
+from SONATA.cbm.mesh.mesh_core import gen_core_cells
+
+from SONATA.cbm.mesh.mesh_intersect import map_mesh_by_intersect_curve2d
+
 from SONATA.cbm.mesh.mesh_utils import (grab_nodes_of_cells_on_BSplineLst,
                                         sort_and_reassignID,)
 from SONATA.cbm.mesh.node import Node
@@ -343,7 +348,7 @@ class CBM(object):
         global_minLen = round(self.refL / Resolution, 5)
 
         core_cell_area = 1.0 * global_minLen ** 2
-        # bw_cell_area = 0.7 * global_minLen ** 2
+        bw_cell_area = 0.7 * global_minLen ** 2
         web_consolidate_tol = 0.5 * global_minLen
 
         # ===================MESH SEGMENT
@@ -368,7 +373,7 @@ class CBM(object):
             (web.wr_nodes, web.wr_cells) = grab_nodes_of_cells_on_BSplineLst(self.SegmentLst[web.ID+1].cells, web.BSplineLst)
 
             if not web.wl_nodes or not web.wl_cells or not web.wr_nodes or not web.wr_cells:  # in case there was no mesh in a segment
-                print('STATUS:\t No mesh on Web Interface ' + str(web.ID) + ' to be consolodated.')
+                print('STATUS:\t No mesh on Web Interface ' + str(web.ID) + ' to be consolidated.')
 
                 # This message gets printed in cases where the web doesn't get
                 # meshed because there is no isotropic layer.
@@ -386,6 +391,21 @@ class CBM(object):
         for c in self.mesh:
             tmp.extend(c.split_quads())
         self.mesh = tmp
+        # ============= BALANCE WEIGHT - CUTTING HOLE ALGORITHM
+        if self.config.setup["BalanceWeight"]:
+            print("STATUS:\t Meshing Balance Weight")
+
+            self.mesh, boundary_nodes = map_mesh_by_intersect_curve2d(self.mesh, self.BW.Curve, self.BW.wire, global_minLen)
+            # boundary_nodes = merge_nodes_if_too_close(boundary_nodes,self.BW.Curve,global_minLen,tol=0.05))
+            [bw_cells, bw_nodes] = gen_core_cells(boundary_nodes, bw_cell_area)
+
+            for c in bw_cells:
+                c.structured = False
+                c.theta_3 = 0
+                c.MatID = self.config.bw["Material"]
+                c.calc_theta_1()
+
+            self.mesh.extend(bw_cells)
 
         # invert nodes list of all cell to make sure they are counterclockwise for vabs in the right coordinate system!
         for c in self.mesh:
@@ -728,7 +748,7 @@ class CBM(object):
 
             if not (self.materials[MatID].viscoelastic == {}):
                 time_scale_list += self.materials[MatID]\
-                                    .viscoelastic['time_scales_v'].tolist()
+                                    .viscoelastic['time_scales_v']
 
         time_scale_list = np.sort(np.unique(time_scale_list)).tolist()
 
@@ -743,7 +763,7 @@ class CBM(object):
                 mat = self.materials[MatID]
 
                 if hasattr(mat, 'viscoelastic') and not (mat.viscoelastic=={}):
-                    found_time_scale = tau in mat.viscoelastic['time_scales_v'].tolist()
+                    found_time_scale = tau in mat.viscoelastic['time_scales_v']
                 else:
                     found_time_scale = False
 
@@ -758,7 +778,7 @@ class CBM(object):
                 else:
                     # find index of time scale
                     time_scale_ind = np.argmax(tau
-                                          == mat.viscoelastic['time_scales_v'])
+                                          == np.array(mat.viscoelastic['time_scales_v']))
 
                 if found_time_scale and mat.orth == 0:
 

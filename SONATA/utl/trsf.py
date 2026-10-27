@@ -81,7 +81,7 @@ def trsf_cbm_to_blfr(Ax2_blfr, Ax2_befr):
     return Trsf
 
 
-def trsf_af_to_blfr(loc, pa_loc, chord, twist, deformation=None):
+def trsf_af_to_blfr(loc, soy, chord, twist, deformation=None):
     """
     Defines the transformation in 3D space to the blade reference frame location
     and pitch-axis information, scales it with chord information and rotates
@@ -91,8 +91,8 @@ def trsf_af_to_blfr(loc, pa_loc, chord, twist, deformation=None):
     ----------
     loc : array
         [x,y,z] position in blade reference coordinates
-    pa_loc : float
-        nondim. pitch axis location
+    soy : float
+        dim. pitch axis location
     chord : float
         chordlength
     twist : float
@@ -116,6 +116,8 @@ def trsf_af_to_blfr(loc, pa_loc, chord, twist, deformation=None):
     trsf_trans1 = gp_Trsf()
     trsf_trans2 = gp_Trsf()
     trsf_scale = gp_Trsf()
+
+    pa_loc = soy / chord
 
     trsf_rot1.SetRotation(gp_Ax1(gp_Pnt(pa_loc, 0, 0), gp_Dir(0, 0, 1)), -twist)
     trsf_trans1.SetTranslation(gp_Pnt(pa_loc, 0, 0), gp_Pnt(0, 0, 0))

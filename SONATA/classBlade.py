@@ -7,8 +7,9 @@
 # Third party modules
 import matplotlib.pyplot as plt
 import numpy as np
-import yaml
+import windIO
 from scipy.interpolate import interp1d, PchipInterpolator
+import importlib.metadata
 
 # OpenCASCADE imports
 from OCC.Core.gp import (
@@ -112,9 +113,10 @@ class Blade(Component):
         Describes the blades twist angles in !radians! in spanwise direction.
         nparray([[grid, twist]])
 
-    pitch_axis : ndarray
-        Describes the blades pitch-axis location in 1/chord lengths from the
-        leading edge. nparray([[grid, pitch_axis]])
+    soy : ndarray
+        Describes the offset between leading edge and reference axis.
+        Usually positive.
+        nparray([[grid, soy]])
 
     airfoils : ndarray
         array of grid location and airfoil instance
@@ -133,7 +135,7 @@ class Blade(Component):
     -------
     blade_matrix : ndarray
         Summons all the blades global properties in one array
-        nparray([[grid, x, y, z, chord, twist, pitch_axis,....]])
+        nparray([[grid, x, y, z, chord, twist, soy,....]])
 
 
     Notes
@@ -174,7 +176,7 @@ class Blade(Component):
         "chord",
         "twist",
         "curvature",
-        "pitch_axis",
+        "soy",
         "airfoils",
         "sections",
         "beam_properties",
@@ -186,7 +188,7 @@ class Blade(Component):
         "f_blade_ref_axis",
         "beam_ref_axis_BSplineLst",
         "f_beam_ref_axis",
-        "f_pa",
+        "f_soy",
         "f_curvature_k1",
         "anba_beam_properties",
         "wopwop_bsplinelst",
@@ -212,14 +214,38 @@ class Blade(Component):
 
         if 'filename' in kwargs:
             filename = kwargs.get('filename')
-            with open(filename, 'r') as myfile:
-                inputs  = myfile.read()
-                yml = yaml.load(inputs, Loader = yaml.FullLoader)
-                self.yml = yml
+            if kwargs['flags']['flag_wt_ontology']:
+                yml = windIO.validate(filename, schema_type="turbine/turbine_schema")
 
+                # Validate compatible windIO version
+                windIO_vers = importlib.metadata.version("windIO")
+                windIO_tuple = tuple(map(int, windIO_vers.split('.')))
+
+                input_vers_tuple = tuple(map(int, yml['windIO_version'].split('.')))
+
+                assert windIO_tuple[0] == 2, \
+                    'SONATA currently only supports windIO version 2.X. ' \
+                    + ' A different version appears to be installed'
+
+                assert input_vers_tuple[0] == 2, \
+                    'SONATA currently only supports windIO version 2.X.' \
+                        + ' Input specifies a different version.'
+
+                assert windIO_tuple[1] >= 1, \
+                    'SONATA currently has tests that support windIO version '\
+                    + '2.1 and not 2.0. Installed version does not match.'
+
+                if input_vers_tuple[1] < 1:
+                    print('WARNING: Input indicates windIO less than 2.1.'
+                          + ' SONATA supports testing with 2.1,'
+                          ' but earlier versions may fail.')
+
+            else:
+                yml = windIO.load_yaml(filename)
+            self.name = yml.get('name')
 
             airfoils = [Airfoil(af) for af in yml.get('airfoils')]
-            self.materials = read_materials(yml.get('materials'))
+            self.materials = read_materials(yml.get('materials'), viscoelastic_yaml=kwargs.get('viscoelastic_yaml', None))
 
             self.read_yaml(yml.get('components').get('blade'), airfoils, **kwargs)
 
@@ -230,7 +256,7 @@ class Blade(Component):
 #        string reputation of an object, """
 #        return 'Blade: '+ str(self.name)
 
-    def _read_ref_axes(self, yml_ra, flag_ref_axes_wt=False, c2_axis=False, tmp_chord = [], tmp_pa = [], tmp_tw=[]):
+    def _read_ref_axes(self, yml_ra, flag_ref_axes_wt=False, c2_axis=False, tmp_chord = [], tmp_soy = [], tmp_tw_rad=[]):
         """
         reads and determines interpolates function for the reference axis of
         the blade
@@ -266,22 +292,22 @@ class Blade(Component):
             tmp_ra['y'] = np.asarray((yml_ra.get('y').get('grid'),yml_ra.get('y').get('values'))).T
             tmp_ra['z'] = np.asarray((yml_ra.get('z').get('grid'),yml_ra.get('z').get('values'))).T
 
-        f_ref_axis_x = interp1d(tmp_ra['x'][:,0], tmp_ra['x'][:,1], bounds_error=False, fill_value='extrapolate')
-        f_ref_axis_y = interp1d(tmp_ra['y'][:,0], tmp_ra['y'][:,1], bounds_error=False, fill_value='extrapolate')
-        f_ref_axis_z = interp1d(tmp_ra['z'][:,0], tmp_ra['z'][:,1], bounds_error=False, fill_value='extrapolate')
+        f_ref_axis_x = interp1d(tmp_ra['x'][:,0], tmp_ra['x'][:,1])
+        f_ref_axis_y = interp1d(tmp_ra['y'][:,0], tmp_ra['y'][:,1])
+        f_ref_axis_z = interp1d(tmp_ra['z'][:,0], tmp_ra['z'][:,1])
 
         x_blra = np.unique(np.sort(np.hstack((tmp_ra['x'][:,0], tmp_ra['y'][:,0], tmp_ra['z'][:,0]))))
         tmp_ra = np.vstack((x_blra, f_ref_axis_x(x_blra), f_ref_axis_y(x_blra), f_ref_axis_z(x_blra))).T
 
         if c2_axis:
-            f_chord = interp1d(tmp_chord[:,0], tmp_chord[:,1], bounds_error=False, fill_value='extrapolate')
+            f_chord = interp1d(tmp_chord[:,0], tmp_chord[:,1])
             chord = f_chord(x_blra)
-            f_pitch_axis = interp1d(tmp_pa[:,0], tmp_pa[:,1], bounds_error=False, fill_value='extrapolate')
-            pitch_axis = f_pitch_axis(x_blra)
-            f_tw = interp1d(tmp_tw[:,0], tmp_tw[:,1], bounds_error=False, fill_value='extrapolate')
+            f_soy = interp1d(tmp_soy[:,0], tmp_soy[:,1])
+            soy = f_soy(x_blra)
+            f_tw = interp1d(tmp_tw_rad[:,0], tmp_tw_rad[:,1])
             twist_rad = f_tw(x_blra)
             # Get the absolute offset between mid chord and pitch axis (rotation center)
-            ch_offset = chord * (0.5 - pitch_axis)
+            ch_offset = chord * 0.5 - soy
             # Rotate it by the twist
             z , y = rotate(0., 0., 0., ch_offset, -twist_rad)
             tmp_ra[:,2] -= y
@@ -355,8 +381,8 @@ class Blade(Component):
         """
         ax2 = self._get_local_Ax2(x)
 
-        a = float(self.f_chord(x)) * float(self.f_pa(x))
-        b = float(self.f_chord(x)) * (1 - float(self.f_pa(x)))
+        a = float(self.f_soy(x))
+        b = float(self.f_chord(x)) - float(self.f_soy(x))
         beta = self.Ax2.Angle(self._get_local_Ax2(x))
         x0 = x - (np.sin(beta) * a * fs / self.f_blade_ref_axis.interpolate(1.0)[0][0, 0])
         x1 = x + (np.sin(beta) * b * fs / self.f_blade_ref_axis.interpolate(1.0)[0][0, 0])
@@ -377,7 +403,7 @@ class Blade(Component):
         for item in afs:
             xi = item[0]
             af = item[1]
-            (wire, te_pnt) = af.trsf_to_blfr(self.f_blade_ref_axis.interpolate(xi)[0][0], float(self.f_pa(xi)), float(self.f_chord(xi)), float(self.f_twist(xi)))
+            (wire, te_pnt) = af.trsf_to_blfr(self.f_blade_ref_axis.interpolate(xi)[0][0], float(self.f_soy(xi)), float(self.f_chord(xi)), float(self.f_twist(xi)))
             wireframe.append(wire)
             tes.append(te_pnt)
 
@@ -427,31 +453,35 @@ class Blade(Component):
             Is the database of airfoils
 
         """
-        self.name = self.yml.get('name')
         print('STATUS:\t Reading YAML Dictionary for Beam/Blade: %s' % (self.name))
         c2_axis = kwargs.get('flags',{}).get('c2_axis')
         #Read chord, twist and nondim. pitch axis location and create interpolation
-        tmp_chord = np.asarray((yml.get('outer_shape_bem').get('chord').get('grid'),yml.get('outer_shape_bem').get('chord').get('values'))).T
-        tmp_tw = np.asarray((yml.get('outer_shape_bem').get('twist').get('grid'),yml.get('outer_shape_bem').get('twist').get('values'))).T
-        tmp_pa = np.asarray((yml.get('outer_shape_bem').get('pitch_axis').get('grid'),yml.get('outer_shape_bem').get('pitch_axis').get('values'))).T
+        tmp_chord = np.asarray((yml.get('outer_shape').get('chord').get('grid'),yml.get('outer_shape').get('chord').get('values'))).T
+        tmp_tw_rad = np.asarray((yml.get('outer_shape').get('twist').get('grid'),yml.get('outer_shape').get('twist').get('values'))).T
+        tmp_tw_rad[:,1] = np.deg2rad(tmp_tw_rad[:,1])
+        tmp_soy = np.asarray((yml.get('outer_shape').get('section_offset_y').get('grid'),yml.get('outer_shape').get('section_offset_y').get('values'))).T
 
         #Read blade & beam reference axis and create BSplineLst & interpolation instance
-        (self.blade_ref_axis_BSplineLst, self.f_blade_ref_axis, tmp_blra) = self._read_ref_axes(yml.get('outer_shape_bem').get('reference_axis'), flag_ref_axes_wt=kwargs.get('flags', {}).get('flag_ref_axes_wt'), c2_axis=c2_axis, tmp_chord = tmp_chord, tmp_pa = tmp_pa, tmp_tw=tmp_tw)
-
-        if not yml.get('outer_shape_bem').get('beam_reference_axis'):
-            #  In case beam reference axis is not defined in yaml file, use identical coordinates for beam reference and reference axis
-            (self.beam_ref_axis_BSplineLst, self.f_beam_ref_axis, tmp_bera) = self._read_ref_axes(yml.get('outer_shape_bem').get('reference_axis'), flag_ref_axes_wt=kwargs.get('flags', {}).get('flag_ref_axes_wt'), c2_axis=c2_axis, tmp_chord = tmp_chord, tmp_pa = tmp_pa, tmp_tw=tmp_tw)
-        else:
-            (self.beam_ref_axis_BSplineLst, self.f_beam_ref_axis, tmp_bera) = self._read_ref_axes(yml.get('outer_shape_bem').get('beam_reference_axis'), flag_ref_axes_wt=kwargs.get('flags', {}).get('flag_ref_axes_wt'))
+        (self.blade_ref_axis_BSplineLst, self.f_blade_ref_axis, tmp_blra) = self._read_ref_axes(yml.get('reference_axis'),
+                                                                                                flag_ref_axes_wt=kwargs.get('flags', {}).get('flag_ref_axes_wt'),
+                                                                                                c2_axis=c2_axis, tmp_chord = tmp_chord, tmp_soy = tmp_soy, tmp_tw_rad=tmp_tw_rad)
+        (self.beam_ref_axis_BSplineLst, self.f_beam_ref_axis, tmp_bera) = self._read_ref_axes(yml.get('reference_axis'),
+                                                                                              flag_ref_axes_wt=kwargs.get('flags', {}).get('flag_ref_axes_wt'),
+                                                                                              c2_axis=c2_axis, tmp_chord = tmp_chord, tmp_soy = tmp_soy, tmp_tw_rad=tmp_tw_rad)
 
         if c2_axis:
-            tmp_pa[:,1]=0.5
-        self.f_chord = interp1d(tmp_chord[:,0], tmp_chord[:,1], bounds_error=False, fill_value='extrapolate')
-        self.f_twist = interp1d(tmp_tw[:,0], tmp_tw[:,1], bounds_error=False, fill_value='extrapolate')
-        self.f_pa = interp1d(tmp_pa[:,0], tmp_pa[:,1], bounds_error=False, fill_value='extrapolate')
+            tmp_soy[:,1]=tmp_chord[:,1]* 0.5
+        self.f_chord = interp1d(tmp_chord[:,0], tmp_chord[:,1])
+        self.f_twist = interp1d(tmp_tw_rad[:,0], tmp_tw_rad[:,1])
+        self.f_soy = interp1d(tmp_soy[:,0], tmp_soy[:,1])
 
         #Read airfoil information
-        airfoil_position = (yml.get('outer_shape_bem').get('airfoil_position').get('grid'),yml.get('outer_shape_bem').get('airfoil_position').get('labels'))
+        outer_shape_airfoils = yml.get('outer_shape').get('airfoils')
+        airfoil_position = ([], [])
+        for af in outer_shape_airfoils:
+            airfoil_position[0].append(af.get('spanwise_position'))
+            airfoil_position[1].append(af.get('name'))
+
         tmp = []
         for an in airfoil_position[1]:
             tmp.append(next((x for x in airfoils if x.name == an), None).id)
@@ -465,20 +495,20 @@ class Blade(Component):
                 cs_pos = np.linspace(0.0, 1.0, npts)
         else:
             if stations is None:
-                cs_pos = np.asarray([cs.get('position') for cs in yml.get('internal_structure_2d_fem').get('sections')])
+                cs_pos = np.asarray([cs.get('position') for cs in yml.get('structure').get('sections')])
             else:
                 cs_pos = stations
 
-        x = np.unique(np.sort(np.hstack((tmp_chord[:,0], tmp_tw[:,0],
+        x = np.unique(np.sort(np.hstack((tmp_chord[:,0], tmp_tw_rad[:,0],
                                          tmp_blra[:,0], tmp_bera[:,0],
-                                         tmp_pa[:,0], arr[:,0], cs_pos))))
+                                         tmp_soy[:,0], arr[:,0], cs_pos))))
 
         self.airfoils = np.asarray([[x, interp_airfoil_position(airfoil_position, airfoils, x)] for x in x])
         self.blade_ref_axis = np.hstack((np.expand_dims(x, axis=1), self.f_blade_ref_axis.interpolate(x)[0]))
         self.beam_ref_axis = np.hstack((np.expand_dims(x, axis=1), self.f_beam_ref_axis.interpolate(x)[0]))
         self.chord = np.vstack((x, self.f_chord(x))).T
         self.twist = np.vstack((x, self.f_twist(x))).T
-        self.pitch_axis = np.vstack((x, self.f_pa(x))).T
+        self.soy = np.vstack((x, self.f_soy(x))).T
         self.f_curvature_k1 = interp1d(x, np.gradient(self.twist[:,1],self.beam_ref_axis[:,1]))  # determine twist per unit length, i.e. the twist gradient at a respective location
 
 
@@ -488,7 +518,7 @@ class Blade(Component):
             cbmconfigs = converter_WT(self, cs_pos, yml, self.materials, mesh_resolution = kwargs.get('flags').get('mesh_resolution'))
 
         else:
-            lst = [[cs.get("position"), CBMConfig(cs, self.materials)] for cs in yml.get("internal_structure_2d_fem").get("sections")]
+            lst = [[cs.get("position"), CBMConfig(cs, self.materials)] for cs in yml.get("structure").get("sections")]
             cbmconfigs = np.asarray(lst)
 
 
@@ -519,7 +549,7 @@ class Blade(Component):
             blade matrix of bl_ra, chord, twist, pa,
 
         """
-        return np.column_stack((self.blade_ref_axis, self.chord[:, 1], self.twist[:, 1], self.pitch_axis[:, 1]))
+        return np.column_stack((self.blade_ref_axis, self.chord[:, 1], self.twist[:, 1], self.soy[:, 1]))
 
 
     def blade_gen_section(self, topo_flag=True, mesh_flag=True, **kwargs):
@@ -747,8 +777,8 @@ class Blade(Component):
         ax[1][1].plot(self.twist[:, 0], self.twist[:, 1], "k.-")
         ax[1][1].set_ylabel("twist [rad]")
 
-        ax[2][1].plot(self.pitch_axis[:, 0], self.pitch_axis[:, 1], "k.-")
-        ax[2][1].set_ylabel("pitch axis location [1/chord]")
+        ax[2][1].plot(self.soy[:, 0], self.soy[:, 1], "k.-")
+        ax[2][1].set_ylabel("Leading edge location [m]")
 
         #        ax3d = fig.add_subplot(326, projection='3d')
         #        for bm, af in zip(self.blade_matrix, self.airfoil):
@@ -975,24 +1005,3 @@ class Blade(Component):
         arr = np.asarray(lst)
 
         return arr
-
-
-#------------------------------------------------------------------------------------
-# Main function
-#------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    plt.close("all")
-
-    #% ====== WindTurbine ==============
-    with open("../jobs/PBortolotti/IEAonshoreWT.yaml", "r") as myfile:
-        inputs = myfile.read()
-    with open("../jobs/PBortolotti/IEAontology_schema.yaml", "r") as myfile:
-        schema = myfile.read()
-    # validate(yaml.load(inputs), yaml.load(schema))
-    yml = yaml.load(inputs)
-
-    airfoils = [Airfoil(af) for af in yml.get("airfoils")]
-    materials = read_materials(yml.get("materials"))
-
-    job = Blade(name="IEAonshoreWT")
-    job.read_yaml(yml.get("components").get("blade"), airfoils, materials, wt_flag=True)

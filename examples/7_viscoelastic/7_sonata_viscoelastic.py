@@ -2,13 +2,13 @@ import os
 import numpy as np
 from SONATA.classBlade import Blade
 from SONATA.utl.beam_struct_eval import beam_struct_eval
-
+import yaml
 
 # Path to yaml file
-run_dir = os.path.dirname( os.path.realpath(__file__) ) + os.sep
+run_dir = os.path.dirname( os.path.realpath(__file__) )
 job_str = '7_hollow_rect.yaml'
 job_name = 'Box_Beam'
-filename_str = run_dir + job_str
+filename_str = os.path.join(run_dir, job_str)
 
 # ===== Define flags ===== #
 flag_wt_ontology        = True # if true, use ontology definition of wind turbines for yaml files
@@ -53,8 +53,8 @@ flags_dict = {"flag_wt_ontology": flag_wt_ontology, "flag_ref_axes_wt": flag_ref
 
 # ===== User defined radial stations ===== #
 # Define the radial stations for cross sectional analysis (only used for flag_wt_ontology = True -> otherwise, sections from yaml file are used!)
-# radial_stations =  [0., 1.]
-radial_stations = np.linspace(0, 1, 21).tolist()
+radial_stations =  [0., 1.]
+# radial_stations = np.linspace(0, 1, 21).tolist()
 # radial_stations = [.7]
 
 # ===== Execute SONATA Blade Component Object ===== #
@@ -118,7 +118,7 @@ mu = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 
 # job.blade_run_viscoelastic()
 
-beam_struct_eval(flags_dict, Loads_dict, radial_stations, job, run_dir,
+beam_struct_eval(job_name, flags_dict, Loads_dict, radial_stations, job, run_dir,
                  job_str, mu)
 
 # ===== PLOTS ===== #
@@ -136,50 +136,29 @@ if flag_3d:
 
 # ===== Expected Damping Behavior ===== #
 
-assert len(job.materials) == 1, 'Following calculations assume single material.'
+with open(os.path.join(run_dir, 'viscoelasticity.yaml'), 'r') as file:
+    viscoelasticity_data = yaml.safe_load(file)
 
+analytical_compare = len(viscoelasticity_data[0]['time_scales_v']) == 2 \
+    and len(job.materials) == 1
 
-assert job.materials[1].viscoelastic['time_scales_v'].shape[0] == 2,\
-    'Following calculations assume single viscoelastic decaying time scale.'
+# Following computations assume a single material with a single viscoelastic
+# time scale.
+if analytical_compare:
 
-# Frequency to evaluate viscoelastic properties at.
-# If checking a modal damping factor, this should be that mode's natural freq.
-# Note this needs to be the actual response frequency and that the viscoelastic
-# material adds nonlinearity and thus may not be simple to evaluate
-freq = 1.0534000 # Hz
-omega  = 2 * np.pi * freq
+    # Frequency to evaluate viscoelastic properties at.
+    # If checking a modal damping factor, this should be that mode's natural freq.
+    # Note this needs to be the actual response frequency and that the viscoelastic
+    # material adds nonlinearity and thus may not be simple to evaluate
+    freq = 1.0534000 # Hz
+    omega  = 2 * np.pi * freq
 
-if job.materials[1].orth == 0:
+    if job.materials[1].orth == 0:
 
-    E_i = job.materials[1].viscoelastic['E_v'][0]
-    tau_i = job.materials[1].viscoelastic['time_scales_v'][0]
+        E_i = viscoelasticity_data[0]['E_v'][0]
+        tau_i = viscoelasticity_data[0]['time_scales_v'][0]
 
-    E_inf = job.materials[1].viscoelastic['E_v'][1]
-
-    storage_mod = E_inf + (omega**2 * tau_i**2 * E_i)/(omega**2 * tau_i**2 + 1)
-    loss_mod = (omega * tau_i * E_i)/(omega**2 * tau_i**2 + 1)
-    tan_delta = loss_mod / storage_mod
-    zeta = tan_delta / (2.0)
-
-
-    print('\nStorage Modulus at {:.3f} Hz: {:.3e}'.format(freq, storage_mod))
-    print('For linear eigenanalysis, this should match elastic value of {:.3e}'
-          .format(job.materials[1].E))
-
-    print('zeta [fraction critical damping] : {:.4e}'.format(zeta))
-
-elif job.materials[1].orth == 1:
-
-    mat_prop_dirs = ['E_1_v', 'E_2_v', 'E_3_v', 'G_12_v', 'G_13_v', 'G_23_v']
-
-    ref_values = job.materials[1].E.tolist() + job.materials[1].G.tolist()
-
-    tau_i = job.materials[1].viscoelastic['time_scales_v'][0]
-
-    for ind, prop_key in enumerate(mat_prop_dirs):
-
-        E_i = job.materials[1].viscoelastic[prop_key][0]
-        E_inf = job.materials[1].viscoelastic[prop_key][1]
+        E_inf = viscoelasticity_data[0]['E_v'][1]
 
         storage_mod = E_inf + (omega**2 * tau_i**2 * E_i)/(omega**2 * tau_i**2 + 1)
         loss_mod = (omega * tau_i * E_i)/(omega**2 * tau_i**2 + 1)
@@ -187,16 +166,41 @@ elif job.materials[1].orth == 1:
         zeta = tan_delta / (2.0)
 
 
-        print('\nFor property: {:s}'.format(prop_key))
-        print('Storage Modulus at {:.3f} Hz: {:.3e}'.format(freq, storage_mod))
+        print('\nStorage Modulus at {:.3f} Hz: {:.3e}'.format(freq, storage_mod))
         print('For linear eigenanalysis, this should match elastic value of {:.3e}'
-              .format(ref_values[ind]))
+              .format(job.materials[1].E))
 
         print('zeta [fraction critical damping] : {:.4e}'.format(zeta))
 
-    print('\nIf all zeta values match, that should be modal zeta for a mode at'
-          + ' that frequency.')
+    elif job.materials[1].orth == 1:
 
-print('\nIf (all) storage modulus match the elastic reference values, then'
-      + ' mode/modal frequency is expected to be the same between'
-      + ' viscoelastic and elastic models at the frequency checked here.')
+        mat_prop_dirs = ['E_1_v', 'E_2_v', 'E_3_v', 'G_12_v', 'G_13_v', 'G_23_v']
+
+        ref_values = job.materials[1].E.tolist() + job.materials[1].G.tolist()
+
+        tau_i = viscoelasticity_data[0]['time_scales_v'][0]
+
+        for ind, prop_key in enumerate(mat_prop_dirs):
+
+            E_i = viscoelasticity_data[0][prop_key][0]
+            E_inf = viscoelasticity_data[0][prop_key][1]
+
+            storage_mod = E_inf + (omega**2 * tau_i**2 * E_i)/(omega**2 * tau_i**2 + 1)
+            loss_mod = (omega * tau_i * E_i)/(omega**2 * tau_i**2 + 1)
+            tan_delta = loss_mod / storage_mod
+            zeta = tan_delta / (2.0)
+
+
+            print('\nFor property: {:s}'.format(prop_key))
+            print('Storage Modulus at {:.3f} Hz: {:.3e}'.format(freq, storage_mod))
+            print('For linear eigenanalysis, this should match elastic value of {:.3e}'
+                  .format(ref_values[ind]))
+
+            print('zeta [fraction critical damping] : {:.4e}'.format(zeta))
+
+        print('\nIf all zeta values match, that should be modal zeta for a mode at'
+              + ' that frequency.')
+
+    print('\nIf (all) storage modulus match the elastic reference values, then'
+          + ' mode/modal frequency is expected to be the same between'
+          + ' viscoelastic and elastic models at the frequency checked here.')

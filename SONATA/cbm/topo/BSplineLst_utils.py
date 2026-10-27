@@ -7,7 +7,11 @@ import numpy as np
 from OCC.Core.GCPnts import (GCPnts_AbscissaPoint,
                              GCPnts_QuasiUniformDeflection,)
 from OCC.Core.Geom import Geom_BSplineCurve, Geom_Curve
-from OCC.Core.Geom2d import (Geom2d_BSplineCurve, Geom2d_Curve, Handle_Geom2d_BSplineCurve_DownCast,)
+from OCC.Core.Geom2d import Geom2d_BSplineCurve, Geom2d_Curve
+try:
+    from OCC.Core.Geom2d import Handle_Geom2d_BSplineCurve_DownCast
+except ImportError:
+    Handle_Geom2d_BSplineCurve_DownCast = Geom2d_BSplineCurve.DownCast
 from OCC.Core.Geom2dAdaptor import Geom2dAdaptor_Curve
 from OCC.Core.Geom2dAPI import (Geom2dAPI_Interpolate,
                                 Geom2dAPI_ProjectPointOnCurve,Geom2dAPI_InterCurveCurve,)

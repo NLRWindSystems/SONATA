@@ -9,12 +9,13 @@ import matplotlib.pyplot as plt
 
 import pytest
 
+run_dir = os.path.dirname( os.path.realpath(__file__) )
+
 def run_stresses(job_str, loads_dict, flag_constant_loads):
 
     # Path to yaml file
-    run_dir = os.path.dirname( os.path.realpath(__file__) ) + os.sep
     job_name = 'Box_Beam'
-    filename_str = run_dir + job_str
+    filename_str = job_str
 
     # ===== Define flags ===== #
     flag_wt_ontology        = True # if true, use ontology definition of wind turbines for yaml files
@@ -101,7 +102,7 @@ def run_stresses(job_str, loads_dict, flag_constant_loads):
     mu2 = 2*zeta[1]/omega[1]
     mu3 = 2*zeta[2]/omega[2]
     mu = np.array([mu1, mu2, mu3, mu2, mu1, mu3])
-    beam_struct_eval(flags_dict, loads_dict, radial_stations, job, run_dir, job_str, mu)
+    beam_struct_eval(job_name, flags_dict, loads_dict, radial_stations, job, run_dir, job_str, mu)
 
 
     # Verfify stresses integrate to applied loads
@@ -179,7 +180,8 @@ def run_stresses(job_str, loads_dict, flag_constant_loads):
 
 def test_force_dir1():
 
-    job_str = '6_box_beam.yaml'
+    job_str = os.path.join(run_dir, '..', '..','..', 'examples',
+                           '6_beam_stress', '6_box_beam.yaml')
     flag_constant_loads = False
 
     recover_forces = np.array([[0.0, 1.0e3, 0.0, 0.0],
@@ -250,26 +252,26 @@ def test_force_dir1():
             assert np.abs(c.stress.sigma11 - sigma11) < tol*sigma11, \
                 "Wrong stress sigma11 for axial load."
 
-            assert np.abs(c.stress.sigma22) < tol, \
+            assert np.abs(c.stress.sigma22) < tol*sigma11, \
                 "Wrong stress sigma22 for axial load."
 
-            assert np.abs(c.stress.sigma33) < tol, \
+            assert np.abs(c.stress.sigma33) < tol*sigma11, \
                 "Wrong stress sigma33 for axial load."
 
-            assert np.abs(c.stress.sigma12) < tol, \
+            assert np.abs(c.stress.sigma12) < tol*sigma11, \
                 "Wrong stress sigma12 for axial load."
 
-            assert np.abs(c.stress.sigma13) < tol, \
+            assert np.abs(c.stress.sigma13) < tol*sigma11, \
                 "Wrong stress sigma13 for axial load."
 
-            assert np.abs(c.stress.sigma23) < tol, \
+            assert np.abs(c.stress.sigma23) < tol*sigma11, \
                 "Wrong stress sigma23 for axial load."
 
             # cxy = c.calc_center()
 
 def test_force_dir2():
 
-    job_str = '6_box_beam.yaml'
+    job_str = os.path.join(run_dir, '..', '..','..', 'examples', '6_beam_stress', '6_box_beam.yaml')
     flag_constant_loads = False
 
     recover_forces = np.array([[0.0, 0.0, 1.0e3, 0.0],
@@ -376,7 +378,7 @@ def test_force_dir2():
 
 def test_force_dir3():
 
-    job_str = '6_box_beam.yaml'
+    job_str = os.path.join(run_dir, '..', '..','..', 'examples', '6_beam_stress', '6_box_beam.yaml')
     flag_constant_loads = False
 
     recover_forces = np.array([[0.0, 0.0, 0.0, 1.0e3],
@@ -490,8 +492,7 @@ def test_force_dir3():
 
 
 def test_moment_dir1():
-
-    job_str = 'circle_beam.yaml'
+    job_str = os.path.join(run_dir, 'circle_beam.yaml')
     flag_constant_loads = False
 
     recover_forces =  np.array([[0.0, 0.0, 0.0, 0.0],
@@ -587,8 +588,7 @@ def test_moment_dir1():
             "Should have 0 sigma23 for moment 1."
 
 def test_moment_dir2():
-
-    job_str = '6_box_beam.yaml'
+    job_str = os.path.join(run_dir, '..', '..','..', 'examples', '6_beam_stress', '6_box_beam.yaml')
     flag_constant_loads = False
 
     recover_forces = np.array([[0.0, 0.0, 0.0, 0.0],
@@ -695,7 +695,7 @@ def test_moment_dir2():
 
 def test_moment_dir3():
 
-    job_str = '6_box_beam.yaml'
+    job_str = os.path.join(run_dir, '..', '..','..', 'examples', '6_beam_stress', '6_box_beam.yaml')
     flag_constant_loads = False
 
     recover_forces = np.array([[0.0, 0.0, 0.0, 0.0],
@@ -801,16 +801,14 @@ def test_moment_dir3():
 
 def test_output_maps():
 
-    job_str = '6_box_beam.yaml'
-
     loads_dict = {"Forces": [1.0e3, 0.5e3, 0.67e3],
                   "Moments": [0.2e2, 0.7e2, 0.9e2]
                   }
 
     # Path to yaml file
-    run_dir = os.path.dirname( os.path.realpath(__file__) ) + os.sep
     job_name = 'Box_Beam'
-    filename_str = run_dir + job_str
+    job_str = os.path.join(run_dir, '..', '..','..', 'examples', '6_beam_stress', '6_box_beam.yaml')
+    filename_str = os.path.join(run_dir, job_str)
 
     # ===== Define flags ===== #
     flag_wt_ontology        = True # if true, use ontology definition of wind turbines for yaml files
@@ -876,11 +874,11 @@ def test_output_maps():
     # Just used for example script, not passed to SONATA
 
     mu = np.zeros(6)
-    beam_struct_eval(flags_dict, loads_dict, radial_stations, job, run_dir, job_str, mu)
+    beam_struct_eval(job_name, flags_dict, loads_dict, radial_stations, job, run_dir, job_str, mu)
 
     # Create stress and strain maps
 
-    output_folder = os.path.join(os.path.dirname( os.path.realpath(__file__) ),
+    output_folder = os.path.join(os.path.dirname( os.path.realpath(__name__) ),
                                  'stress-map')
 
     job.blade_exp_stress_strain_map(output_folder=output_folder)
@@ -946,10 +944,9 @@ def twist_stress_map_helper(flag_output_zero_twist):
     matplotlib.use('Agg')
 
     # Path to yaml file
-    run_dir = os.path.dirname( os.path.realpath(__file__) ) + os.sep
     job_str = 'rotated_beam.yaml'
-    job_name = 'Box-Beam'
-    filename_str = run_dir + job_str
+    job_name = 'rot-beam'
+    filename_str = os.path.join(run_dir, job_str)
 
     # ===== Define flags ===== #
     flag_wt_ontology        = True # if true, use ontology definition of wind turbines for yaml files
@@ -1034,7 +1031,7 @@ def twist_stress_map_helper(flag_output_zero_twist):
     mu2 = 2*zeta[1]/omega[1]
     mu3 = 2*zeta[2]/omega[2]
     mu = np.array([mu1, mu2, mu3, mu2, mu1, mu3])
-    beam_struct_eval(flags_dict, Loads_dict, radial_stations, job,
+    beam_struct_eval(job_name, flags_dict, Loads_dict, radial_stations, job,
                      run_dir, job_str, mu)
 
 
@@ -1062,18 +1059,18 @@ def test_stress_map_zero_twist():
     # Create all output map options
 
     # Baseline stress map case
-    output_baseline = os.path.join(os.path.dirname( os.path.realpath(__file__) ),
+    output_baseline = os.path.join(os.path.dirname( os.path.realpath(__name__) ),
                                  'stress-map')
     job_baseline.blade_exp_stress_strain_map(output_folder=output_baseline)
 
     # Stress map case using the flag on export only and not in job creation
-    output_flag = os.path.join(os.path.dirname( os.path.realpath(__file__) ),
+    output_flag = os.path.join(os.path.dirname( os.path.realpath(__name__) ),
                                  'stress-map-flag')
     job_baseline.blade_exp_stress_strain_map(output_folder=output_flag,
                                              flag_output_zero_twist=True)
 
     # Stress maps that are at zero twist because of evaluation of properties
-    output_0twist = os.path.join(os.path.dirname( os.path.realpath(__file__) ),
+    output_0twist = os.path.join(os.path.dirname( os.path.realpath(__name__) ),
                                  'stress-map-flag')
     job_0twist.blade_exp_stress_strain_map(output_folder=output_0twist)
 

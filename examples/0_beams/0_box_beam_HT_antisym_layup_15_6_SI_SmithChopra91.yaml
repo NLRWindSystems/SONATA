@@ -4,43 +4,41 @@ description: Example test case - rectangular beam
 components:
 #==================== B L A D E ====================================
     blade:
-        outer_shape_bem:
-            airfoil_position:
+        reference_axis:
+            x:
                 grid: [0.0, 1.0]
-                labels: [rectangular, rectangular]
+                values: [0.0, 762.]
+            y:
+                grid: [0.0, 1.0]
+                values: [0.0, 0.0]
+            z:
+                grid: [0.0, 1.0]
+                values: [0.0, 0.0]
+        outer_shape:
             chord:
                 grid: [0.0, 1.0]
                 values: [1., 1.]  # normalized chord
             twist:
                 grid: [0.0, 1.0]
                 values: [0.0, 0.0]
-            pitch_axis:
+            section_offset_y:
                 grid: [0.0, 1.0]
                 values: [0., 0.]
                 # values: [0.15, 0.3]
-            reference_axis:
-                x:
-                    grid: [0.0, 1.0]
-                    values: [0.0, 762.]
-                y:
-                    grid: [0.0, 1.0]
-                    values: [0.0, 0.0]
-                z:
-                    grid: [0.0, 1.0]
-                    values: [0.0, 0.0]
-            beam_reference_axis:
-                x:
-                    grid: [0.0, 1.0]
-                    values: [0.0, 762.]
-                y:
-                    grid: [0.0, 1.0]
-                    values: [0.0, 0.0]
-                z:
-                    grid: [0.0, 1.0]
-                    values: [0.0, 0.0]
+            airfoils:
+               -  name: rectangular
+                  spanwise_position: 0.0
+                  configuration:
+                     -  default
+                  weight: [1.0]
+               -  name: rectangular
+                  spanwise_position: 1.0
+                  configuration:
+                     -  default
+                  weight: [1.0]
 
 #-------------------- C B M ------------------------------------
-        internal_structure_2d_fem:
+        structure:
             sections:
               # --- r/R = 0.0 ---
               - position: 0.0
@@ -94,21 +92,21 @@ airfoils:
 #           y: [0.0,       0.0068199,  0.0068199, -0.0068199, -0.0068199, 0.0]
            x: [12.1031, 12.1031, -12.1031, -12.1031,  12.1031, 12.1031]   # in SI units - mm - box beam analogous to Popescu/Hodges 2000 paper p. 551/552 & Hodges 1992 paper
            y: [0.0,    6.8199,  6.8199, -6.8199, -6.8199, 0.0]
-
-      relative_thickness: 1.0000
+      rthick: 0.5000
       aerodynamic_center: 0.5000
       polars:  # dummy 2pi polars (not used in example)
          -  configuration: Default
-            re: 3.00E+06
-            c_m:
-                grid: [-3.141592653589793, 3.141592653589793]
-                values: [0.0, 0.0]
-            c_l:
-                grid: [-3.141592653589793, 3.141592653589793]
-                values: [0.0, 0.0]
-            c_d:
-                grid: [-3.141592653589793, 3.141592653589793]
-                values: [0.5, 0.5]
+            re_sets:
+                - re: 3.00E+06
+                  c_m:
+                      grid: [-3.141592653589793, 3.141592653589793]
+                      values: [0.0, 0.0]
+                  c_l:
+                      grid: [-3.141592653589793, 3.141592653589793]
+                      values: [0.0, 0.0]
+                  c_d:
+                      grid: [-3.141592653589793, 3.141592653589793]
+                      values: [0.5, 0.5]
 
 materials:
 

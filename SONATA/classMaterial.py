@@ -7,7 +7,6 @@ from collections import OrderedDict
 
 # Third party modules
 import numpy as np
-import yaml
 
 
 #------------------------------------------------------------------------------------
@@ -237,17 +236,6 @@ class IsotropicMaterial(Material):
         if kw.get("nu") is not None:
             self.nu = float(kw.get("nu"))
 
-
-        viscoelastic_mat_keys = ['time_scales_v', 'E_v']
-
-        viscoelastic_dict = {}
-
-        for k in viscoelastic_mat_keys:
-            if kw.get(k) is not None:
-                viscoelastic_dict[k] = np.asarray(kw.get(k)).astype(float)
-
-        self.viscoelastic = viscoelastic_dict
-
         if kw.get("alpha") is not None:
             self.alpha = float(kw.get("alpha"))
 
@@ -256,6 +244,8 @@ class IsotropicMaterial(Material):
 
         if kw.get("UTS") is not None:
             self.UTS = float(kw.get("UTS"))
+
+        self.viscoelastic = {}
 
     def constitutive_tensor(self):
         """
@@ -399,17 +389,6 @@ class OrthotropicMaterial(Material):
         if all(k in kw for k in ('alpha_11', 'alpha_22', 'alpha_33')):
             self.alpha = np.array([kw.get('alpha_11'), kw.get('alpha_22'), kw.get('alpha_33')]).astype(float)
 
-        viscoelastic_mat_keys = ['time_scales_v', 'E_1_v', 'E_2_v', 'E_3_v',
-                            'G_12_v', 'G_13_v', 'G_23_v']
-
-        viscoelastic_dict = {}
-
-        for k in viscoelastic_mat_keys:
-            if kw.get(k) is not None:
-                viscoelastic_dict[k] = np.asarray(kw.get(k)).astype(float)
-
-        self.viscoelastic = viscoelastic_dict
-
         if flag_mat:  # wisdem includes vectors for the following material properties that are to be converted in order to comply with SONATA and VABS/anbax
             if kw.get('Xt') is not None:
                 self.Xt = float(kw.get('Xt')[0])  # retrieve axial tensile strength in [MPa] from provided 3D vector
@@ -443,6 +422,8 @@ class OrthotropicMaterial(Material):
                 self.S21 = float(kw.get('S21'))  # in-/out of plane shear strength [MPa]
 
         # self.S23 = float(kw.get('S23'))
+
+        self.viscoelastic = {}
 
     def constitutive_tensor(self):
         """
@@ -530,7 +511,7 @@ class OrthotropicMaterial(Material):
 #------------------------------------------------------------------------------------
 # Utility functions
 #------------------------------------------------------------------------------------
-def read_materials(yml):
+def read_materials(yml, viscoelastic_yaml=None):
     """
     Read material definitions from YAML data and create material objects.
 
@@ -569,7 +550,27 @@ def read_materials(yml):
         elif mat.get('orth') == 1:
             materials[ID] = OrthotropicMaterial(ID=ID, flag_mat=flag_materials_vector_input, **mat)
 
+        if viscoelastic_yaml is not None:
+            # read viscoelastic properties from separate yaml file and assign to material
+            import yaml
+            with open(viscoelastic_yaml, 'r') as f:
+                viscoelastic_data = yaml.safe_load(f)
+
+            for ve_mat in viscoelastic_data.get('materials', []):
+                ve_mat_name = ve_mat.get('name', '').lower()
+                if ve_mat_name == materials[ID].name.lower():
+                    # assign viscoelastic properties to the material
+                    viscoelastic_mat_keys = ['time_scales_v', 'E_v',
+                                             'E_1_v', 'E_2_v', 'E_3_v',
+                                             'G_12_v', 'G_13_v', 'G_23_v']
+
+                    for k in viscoelastic_mat_keys:
+                        if ve_mat.get(k) is not None:
+                            materials[ID].viscoelastic[k] = [float(tmp)
+                                                     for tmp in ve_mat.get(k)]
+
     materials = OrderedDict(sorted(materials.items()))
+
     return materials
 
 
@@ -592,16 +593,3 @@ def find_material(materials, attr, value):
         Material object if found, otherwise None.
     """
     return next((x for x in materials.values() if getattr(x, attr).lower() == value.lower()), None)
-
-
-#------------------------------------------------------------------------------------
-# Main function
-#------------------------------------------------------------------------------------
-if __name__ == '__main__':
-    a = IsotropicMaterial(ID=1, name='iso_mat', rho=0.4, )
-    b = OrthotropicMaterial(ID=2, name='orth_mat', rho=0.5)
-
-    with open('jobs/MonteCarlo/UH-60A_adv.yml', 'r') as myfile:
-        inputs = myfile.read()
-    data = yaml.load(inputs)['materials']
-    materials3 = read_materials(data)

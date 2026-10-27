@@ -5,8 +5,8 @@ from SONATA.utl.beam_struct_eval import beam_struct_eval
 
 # Path to yaml file
 run_dir = os.path.dirname( os.path.realpath(__file__) ) + os.sep
-job_str = 'IEA-3.4-130-RWT.yaml'
-job_name = 'IEA3.4'
+job_str = 'IEA-3p4-130-RWT.yaml'
+job_name = 'IEA3p4'
 filename_str = run_dir + job_str
 
 # ===== Define flags ===== #
@@ -50,12 +50,12 @@ flags_dict = {"flag_wt_ontology": flag_wt_ontology, "flag_ref_axes_wt": flag_ref
 
 # ===== User defined radial statiosns ===== #
 # Define the radial stations for cross sectional analysis (only used for flag_wt_ontology = True -> otherwise, sections from yaml file are used!)
-radial_stations = [0.000000000000000e+00, 6.896551724137931e-02, 1.034482758620690e-01, 1.379310344827586e-01, 1.724137931034483e-01, 2.068965517241379e-01,
-                   2.413793103448276e-01, 2.758620689655172e-01, 3.103448275862069e-01, 3.448275862068966e-01, 3.793103448275862e-01, 4.137931034482759e-01, 4.482758620689655e-01,
-                   4.827586206896551e-01, 5.172413793103449e-01, 5.517241379310345e-01, 5.862068965517241e-01, 6.206896551724138e-01, 6.551724137931034e-01, 6.896551724137931e-01,
-                   7.241379310344828e-01, 7.586206896551724e-01, 7.931034482758621e-01, 8.275862068965517e-01, 8.620689655172413e-01, 8.965517241379310e-01, 9.310344827586207e-01,
-                   9.655172413793103e-01, 1.000000000000000e+00]
-# radial_stations = [.4]
+# radial_stations = [0.000000000000000e+00, 6.896551724137931e-02, 1.034482758620690e-01, 1.379310344827586e-01, 1.724137931034483e-01, 2.068965517241379e-01,
+#                    2.413793103448276e-01, 2.758620689655172e-01, 3.103448275862069e-01, 3.448275862068966e-01, 3.793103448275862e-01, 4.137931034482759e-01, 4.482758620689655e-01,
+#                    4.827586206896551e-01, 5.172413793103449e-01, 5.517241379310345e-01, 5.862068965517241e-01, 6.206896551724138e-01, 6.551724137931034e-01, 6.896551724137931e-01,
+#                    7.241379310344828e-01, 7.586206896551724e-01, 7.931034482758621e-01, 8.275862068965517e-01, 8.620689655172413e-01, 8.965517241379310e-01, 9.310344827586207e-01,
+#                    9.655172413793103e-01, 1.000000000000000e+00]
+radial_stations = np.linspace(0., 1., 5, endpoint=True)
 
 # ===== Execute SONATA Blade Component Object ===== #
 # name          - job name of current task
@@ -86,7 +86,7 @@ mu1 = 2*zeta[0]/omega[0]
 mu2 = 2*zeta[1]/omega[1]
 mu3 = 2*zeta[2]/omega[2]
 mu = np.array([mu1, mu2, mu3, mu2, mu1, mu3])
-beam_struct_eval(flags_dict, Loads_dict, radial_stations, job, run_dir, job_str, mu)
+beam_struct_eval(job_name, flags_dict, Loads_dict, radial_stations, job, run_dir, job_str, mu)
 
 # ===== PLOTS ===== #
 # job.blade_plot_attributes()

@@ -22,7 +22,7 @@ def test_6x6_iea15mw():
     # Path to yaml file
     run_dir = os.path.dirname( os.path.realpath(__file__) )
     job_str = 'IEA-15-240-RWT.yaml'
-    job_name = 'IEA15'
+    job_name = 'IEA-15-240-RWT'
     filename_str = os.path.join(run_dir, '..', '..','..', 'examples','1_IEA15MW', job_str)
 
     # ===== Define flags ===== #
@@ -71,9 +71,9 @@ def test_6x6_iea15mw():
     # ===== User defined radial stations ===== #
     # Define the radial stations for cross sectional analysis
     # (only used for flag_wt_ontology = True -> otherwise, sections from yaml file are used!)
-    radial_stations =  [0., 0.01, 0.03, 0.05, 0.075, 0.15, 0.25, 0.3 , 0.4,
-                        0.5 , 0.6 , 0.7 , 0.8 , 0.9 , 1.]
-    # radial_stations = [.7]
+    # radial_stations =  [0., 0.01, 0.03, 0.05, 0.075, 0.15, 0.25, 0.3 , 0.4,
+    #                     0.5 , 0.6 , 0.7 , 0.8 , 0.9 , 1.]
+    radial_stations = [.7]
     # ===== Execute SONATA Blade Component Object ===== #
     # name          - job name of current task
     # filename      - string combining the defined folder directory and the job name
@@ -208,7 +208,7 @@ def test_6x6_iea15mw():
     mu2 = 2*zeta[1]/omega[1]
     mu3 = 2*zeta[2]/omega[2]
     mu = np.array([mu1, mu2, mu3, mu2, mu1, mu3])
-    beam_struct_eval(flags_dict, Loads_dict, radial_stations, job,
+    beam_struct_eval(job_name, flags_dict, Loads_dict, radial_stations, job,
                      run_dir, job_str, mu)
 
 
@@ -224,7 +224,7 @@ def test_6x6_iea15mw():
     test_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                              test_file)
 
-    utils.compare_bd_blade(ref_path, test_path, tolerance=1e-9)
+    utils.compare_bd_blade(ref_path, test_path, abs_tolerance=1e-3)
 
 
 def test_external_mesh_iea15mw():

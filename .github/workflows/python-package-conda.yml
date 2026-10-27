@@ -18,7 +18,7 @@ jobs:
       fail-fast: False
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.11"]
 
     steps:
       - name: checkout repository
@@ -70,12 +70,24 @@ jobs:
 
       - name: Run example 5
         run: |
-          cd examples/5_IEA_5MW
+          cd examples/5_UH60
           export MPLBACKEND=Agg
-          python 5_sonata_IEA5.py
+          python 5_uh60.py
 
       - name: Run example 6
         run: |
           cd examples/6_beam_stress
           export MPLBACKEND=Agg
           python 6_sonata_beam_stress.py
+
+      - name: Run example 7
+        run: |
+          cd examples/7_viscoelastic
+          export MPLBACKEND=Agg
+          python 7_sonata_viscoelastic.py
+
+      - name: Run example 8
+        run: |
+          cd examples/8_fiber_orient
+          export MPLBACKEND=Agg
+          python 8_sonata_orientation.py

@@ -21,7 +21,7 @@ from SONATA.utl_openfast.utl_sonata2beamdyn import write_beamdyn_axis, write_bea
 
 
 
-def beam_struct_eval(flags_dict, loads_dict, cs_pos, job, folder_str, job_str, mu):
+def beam_struct_eval(job_name, flags_dict, loads_dict, cs_pos, job, folder_str, job_str, mu):
 
     """
     Analyse, transform, evaluate and plot structural results from VABS and/or ANBAX
@@ -248,14 +248,14 @@ def beam_struct_eval(flags_dict, loads_dict, cs_pos, job, folder_str, job_str, m
     if flags_dict['flag_write_BeamDyn'] & flags_dict['flag_DeamDyn_def_transform']:
         print('STATUS:\t Write BeamDyn input files')
         # refine = int(30/len(cs_pos))  # initiate node refinement parameter
-        write_beamdyn_axis(folder_str, flags_dict, job.yml.get('name'), job.blade_ref_axis, job.twist)
-        write_beamdyn_prop(folder_str, flags_dict, job.yml.get('name'), cs_pos, anbax_beam_stiff, anbax_beam_inertia, mu)
+        write_beamdyn_axis(folder_str, flags_dict, job_name, job.blade_ref_axis, job.twist)
+        write_beamdyn_prop(folder_str, flags_dict, job_name, cs_pos, anbax_beam_stiff, anbax_beam_inertia, mu)
 
         if flags_dict['viscoelastic']:
 
             print('STATUS:\t Writing viscoelastic BeamDyn input file.')
             write_beamdyn_viscoelastic(folder_str, flags_dict,
-                                       job.yml.get('name'), cs_pos,
+                                       job_name, cs_pos,
                                        job.beam_properties[0][1].tau,
                                        anbax_beam_viscoelastic)
 
@@ -285,7 +285,7 @@ def beam_struct_eval(flags_dict, loads_dict, cs_pos, job, folder_str, job_str, m
 
         print('STATUS:\t Write OpenTurbine input files')
 
-        write_beamdyn_prop(folder_str, flags_dict, job.yml.get('name'),
+        write_beamdyn_prop(folder_str, flags_dict, job_name,
                            cs_pos, anbax_beam_stiff, anbax_beam_inertia, mu,
                            format_name='OpenTurbine')
 
@@ -293,7 +293,7 @@ def beam_struct_eval(flags_dict, loads_dict, cs_pos, job, folder_str, job_str, m
 
             print('STATUS:\t Writing viscoelastic OpenTurbine input file.')
             write_beamdyn_viscoelastic(folder_str, flags_dict,
-                                       job.yml.get('name'), cs_pos,
+                                       job_name, cs_pos,
                                        job.beam_properties[0][1].tau,
                                        anbax_beam_viscoelastic,
                                        format_name='OpenTurbine')
@@ -585,8 +585,7 @@ def strain_energy_eval(blade, MatID=None, station_weights=None):
 
     """
 
-    length = blade.yml['components']['blade']['outer_shape_bem'] \
-                    ['reference_axis']['z']['values'][-1]
+    length = blade.blade_ref_axis[-1,1]
 
     # Energy calculated in material coordinates.
     energyM_length = np.zeros((len(blade.sections), 6))

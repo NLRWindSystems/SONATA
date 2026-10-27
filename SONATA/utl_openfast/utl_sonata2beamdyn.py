@@ -102,7 +102,7 @@ def convert_structdef_SONATA_to_beamdyn(cs_pos, SONATA_beam_prop):
 # --- Write BeamDyn file with blade reference line locations ---#
 def write_beamdyn_axis(folder, flags_dict, wt_name, ra, twist):
 
-    n_pts = 50
+    n_pts = 30
     grid = np.linspace(0, 1, n_pts)
 
     f_interp = interp1d(ra[:,0], ra[:,3])
@@ -154,11 +154,6 @@ def write_beamdyn_axis(folder, flags_dict, wt_name, ra, twist):
     file.write('          10   order_elem     - Order of interpolation (basis) function (-)\n')
     file.write('---------------------- MATERIAL PARAMETER --------------------------------------\n')
     file.write('"%s"    BldFile - Name of file containing properties for blade (quoted string)\n' % (wt_name + '_BeamDyn_Blade.dat'))
-    file.write('---------------------- PITCH ACTUATOR PARAMETERS -------------------------------\n')
-    file.write('False         UsePitchAct - Whether a pitch actuator should be used (flag)\n')
-    file.write('        200   PitchJ      - Pitch actuator inertia (kg-m^2) [used only when UsePitchAct is true]\n')
-    file.write('      2E+07   PitchK      - Pitch actuator stiffness (kg-m^2/s^2) [used only when UsePitchAct is true]\n')
-    file.write('     500000   PitchC      - Pitch actuator damping (kg-m^2/s) [used only when UsePitchAct is true]\n')
     file.write('---------------------- OUTPUTS -------------------------------------------------\n')
     file.write('False          SumPrint       - Print summary data to "<RootName>.sum" (flag)\n')
     file.write('"ES10.3E2"    OutFmt         - Format used for text tabular output, excluding the time channel.\n')
@@ -198,11 +193,14 @@ def write_beamdyn_prop(folder, flags_dict, wt_name, radial_stations,
     file.write(' Test Format 1\n')
     file.write(' ---------------------- BLADE PARAMETERS --------------------------------------\n')
     file.write('%u   station_total    - Number of blade input stations (-)\n' % (n_pts))
-    file.write(' 1   damp_type        - Damping type: 0: no damping; 1: damped\n')
+    file.write(' 1   damp_type        - Damping type (switch) 0: none, 1: stiffness-proportional, 2: modal\n')
     file.write('  ---------------------- DAMPING COEFFICIENT------------------------------------\n')
     file.write('   mu1        mu2        mu3        mu4        mu5        mu6\n')
     file.write('   (-)        (-)        (-)        (-)        (-)        (-)\n')
     file.write('\t %.5e \t %.5e \t %.5e \t %.5e \t %.5e \t %.5e\n' % (mu[0], mu[1], mu[2], mu[3], mu[4], mu[5]))
+    file.write('------ Modal Damping [used only if damp_type=2] --------------------------------\n')
+    file.write('6                      n_modes     - Number of modal damping coefficients (-)\n')
+    file.write('0.01 0.01 0.01 0.01 0.01 0.01 zeta         - Damping coefficients for mode 1 through n_modes\n')
     file.write(' ---------------------- DISTRIBUTED PROPERTIES---------------------------------\n')
 
     if flags_dict['flag_write_BeamDyn_unit_convert'] == 'mm_to_m':  # convert units from mm (yaml input) to m
@@ -311,35 +309,3 @@ def convert_inertia_matrix(beam_inertia, flags_dict):
                     beam_inertia[:, j, k] = beam_inertia[:, j, k] * 1e-6  # kg mm2 -> kg m2
 
     return beam_inertia
-
-# ==============
-# Main
-# ==============
-
-if __name__ == '__main__':
-    import yaml
-    from SONATA.classAirfoil import Airfoil
-    #from SONATA.classBlade import Blade
-
-    from SONATA.classMaterial import read_materials
-
-    # provide primary path; used for providing yaml input file as well as output directory
-    folder = '/Users/rfeil/work/6_SONATA/SONATA/jobs/RFeil/'
-    filename = (folder + 'IEAonshoreWT_BAR_005a.yaml')
-    with open(filename, 'r') as myfile:
-        inputs = myfile.read()
-        yml = yaml.load(inputs, Loader=yaml.FullLoader)
-
-    airfoils = [Airfoil(af) for af in yml.get('airfoils')]
-    materials = read_materials(yml.get('materials'))
-    # Blade.read_IEA37(yml.get('components').get('blade'), airfoils, **kwargs)
-    wt_name = yml.get('name')
-
-    # radial_stations = [0.0, 0.5, 1.0] # must include 0 and 1!
-    radial_stations = np.linspace(0.0, 1.0, 11)
-
-    beam_stiff = np.zeros([len('radial_stations'), 6, 6])
-    beam_inertia = np.zeros([len('radial_stations'), 6, 6])
-
-    write_beamdyn_axis(folder, wt_name, yml.get('components').get('blade'))
-    write_beamdyn_prop(folder, wt_name, radial_stations, beam_stiff, beam_inertia)

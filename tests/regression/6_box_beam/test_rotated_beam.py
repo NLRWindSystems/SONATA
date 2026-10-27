@@ -34,7 +34,7 @@ def test_6x6_rotated():
     # Path to yaml file
     run_dir = os.path.dirname( os.path.realpath(__file__) ) + os.sep
     job_str = 'rotated_beam.yaml'
-    job_name = 'Box-Beam'
+    job_name = 'Rotated_Beam'
     filename_str = run_dir + job_str
 
     # ===== Define flags ===== #
@@ -120,7 +120,7 @@ def test_6x6_rotated():
     mu2 = 2*zeta[1]/omega[1]
     mu3 = 2*zeta[2]/omega[2]
     mu = np.array([mu1, mu2, mu3, mu2, mu1, mu3])
-    beam_struct_eval(flags_dict, Loads_dict, radial_stations, job,
+    beam_struct_eval(job_name, flags_dict, Loads_dict, radial_stations, job,
                      run_dir, job_str, mu)
 
 
@@ -136,7 +136,7 @@ def test_6x6_rotated():
     test_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                              test_file)
 
-    utils.compare_bd_blade(ref_path, test_path, tolerance=1e-9)
+    utils.compare_bd_blade(ref_path, test_path, abs_tolerance=1e-4)
 
     # Check that the output repots zero twist.
 

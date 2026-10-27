@@ -1,17 +1,22 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import yaml
 
 # Load data from the file
 run_dir = os.path.dirname(os.path.abspath(__file__))
 file_path_damp = os.path.join(run_dir, "damp_material_contributions.txt")
 file_path_energy = os.path.join(run_dir, "energy_material_contributions.txt")
+file_modal = os.path.join(run_dir, "modal_data.yaml")
 
 damp_contributions = np.loadtxt(file_path_damp)
 energy_contributions = np.loadtxt(file_path_energy)
-mat_names = ["UD GFRP", "UD CFRP", "BX GFRP", "TX GFRP", "Adhesive", "Foam", "Gelcoat"]
+mat_names = ["UD GFRP", "BX GFRP", "TX GFRP", "Adhesive", "Foam", "Gelcoat"]
 Mod_names = ["1F", "1E", "2F", "2E", "3F", "3E", "4F", "1T"]
-Freqs = [0.38, 0.51, 1.05, 1.48, 2.19, 3.17, 3.71, 4.01]
+with open(file_modal, 'r') as f:
+    modal_data = yaml.safe_load(f)
+
+Freqs = [modal_data['freq_Hz'][i] for i in range(len(Mod_names))]
 
 for i in range(len(Mod_names)):
     # Create a pie chart for each mode

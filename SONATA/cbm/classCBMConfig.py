@@ -10,10 +10,9 @@ from collections import OrderedDict
 
 # Third party modules
 import numpy as np
-import yaml
 
 # First party modules
-from SONATA.classMaterial import find_material, read_materials
+from SONATA.classMaterial import find_material
 from SONATA.anbax.classANBAXConfig import ANBAXConfig
 
 if __name__ == "__main__":
@@ -144,20 +143,3 @@ class CBMConfig(object):
         if yml.get("trim_mass"):
             self.bw = yml.get("trim_mass")  #
             self.setup["BalanceWeight"] = True
-
-
-if __name__ == "__main__":
-
-    # classic configuration file:
-    os.chdir("/media/gu32kij/work/TPflumm/SONATA")
-    # fname = 'jobs/VariSpeed/advanced/sec_config.yml'
-    fname = "examples/sec_config.yml"
-    cfg = CBMConfig(fname)
-
-    with open("jobs/VariSpeed/UH-60A_adv.yml", "r") as myfile:
-        inputs = myfile.read()
-
-    yml = yaml.load(inputs)
-    materials = read_materials(yml.get("materials"))
-    yml = yml.get("components").get("blade").get("2d_fem").get("sections")[0]
-    wt_cfg = CBMConfig(yml, materials)

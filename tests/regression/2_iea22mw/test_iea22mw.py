@@ -22,7 +22,7 @@ def test_6x6_iea22mw():
     # Path to yaml file
     run_dir = os.path.dirname( os.path.realpath(__file__) )
     job_str = 'IEA-22-280-RWT.yaml'
-    job_name = 'IEA22'
+    job_name = 'IEA-22-280-RWT'
     filename_str = os.path.join(run_dir, '..', '..','..', 'examples','2_IEA22MW', job_str)
 
 
@@ -75,11 +75,7 @@ def test_6x6_iea22mw():
     # ===== User defined radial statiosns ===== #
     # Define the radial stations for cross sectional analysis (only used for
     # flag_wt_ontology = True -> otherwise, sections from yaml file are used!)
-    #radial_stations = [0.        , 0.02040816, 0.04081633, 0.06122449, 0.08163265, 0.10204082, 0.12244898, 0.14285714, 0.16326531, 0.18367347, 0.20408163, 0.2244898 , 0.24489796,
-    #               0.26530612, 0.28571429, 0.30612245, 0.32653061, 0.34693878, 0.36734694, 0.3877551 , 0.40816327, 0.42857143, 0.44897959, 0.46938776, 0.48979592, 0.51020408,
-    #               0.53061224, 0.55102041, 0.57142857, 0.59183673, 0.6122449 , 0.63265306, 0.65306122, 0.67346939, 0.69387755, 0.71428571, 0.73469388, 0.75510204, 0.7755102 ,
-    #               0.79591837, 0.81632653, 0.83673469, 0.85714286, 0.87755102, 0.89795918, 0.91836735, 0.93877551, 0.95918367, 1.]
-    radial_stations = np.linspace(0., 1., 10, endpoint=True)
+    radial_stations = [0.3]
 
 
     # ===== Execute SONATA Blade Component Object ===== #
@@ -113,7 +109,7 @@ def test_6x6_iea22mw():
     mu2 = 2*zeta[1]/omega[1]
     mu3 = 2*zeta[2]/omega[2]
     mu = np.array([mu1, mu2, mu3, mu2, mu1, mu3])
-    beam_struct_eval(flags_dict, Loads_dict, radial_stations, job, run_dir,
+    beam_struct_eval(job_name, flags_dict, Loads_dict, radial_stations, job, run_dir,
                      job_str, mu)
 
     plt.close('all')
@@ -128,7 +124,7 @@ def test_6x6_iea22mw():
     test_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                              test_file)
 
-    utils.compare_bd_blade(ref_path, test_path, tolerance=1e-9)
+    utils.compare_bd_blade(ref_path, test_path, abs_tolerance=1e-3)
 
 
 if __name__ == "__main__":

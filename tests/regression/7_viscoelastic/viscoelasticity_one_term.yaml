@@ -1,0 +1,11 @@
+materials:
+  - name: steel # Isotropic definition
+    # Viscoelastic inputs (not defined in WindIO).
+    time_scales_v : [0.05, inf] # inf will be used to mark the non-decaying parameter values.
+    # Values correspond to `time_scales_v`. Values should add approximately to E,G.
+    E_1_v : [10000000000, 200000000000]
+    E_2_v : [10000000000, 200000000000]
+    E_3_v : [10000000000, 200000000000]
+    G_12_v : [3846153846.15238, 76923076923.04761]
+    G_13_v : [3846153846.15238, 76923076923.04761]
+    G_23_v : [3846153846.15238, 76923076923.04761]

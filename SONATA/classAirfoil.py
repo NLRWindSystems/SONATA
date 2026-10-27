@@ -7,7 +7,6 @@ import numbers
 import os
 
 # Third party modules
-import matplotlib.pyplot as plt
 import numpy as np
 # PythonOCC Libraries
 from OCC.Core.gp import gp_Pnt
@@ -129,7 +128,7 @@ class Airfoil(object):
         self.wire = build_wire_from_BSplineLst(self.BSplineLst, twoD=False)
         return self.wire
 
-    def trsf_to_blfr(self, loc, pa_loc, chord, twist):
+    def trsf_to_blfr(self, loc, soy, chord, twist):
         """
         transforms the nondim. airfoil to the blade reference frame location
         and pitch-axis information, scales it with chord information and rotates
@@ -139,8 +138,8 @@ class Airfoil(object):
         ----------
         loc : array
             [x,y,z] position in blade reference coordinates
-        pa_loc : float
-            nondim. pitch axis location
+        soy : float
+            dim. pitch axis location
         chord : float
             chordlength
         twist : float
@@ -151,7 +150,7 @@ class Airfoil(object):
         wire : TopoDS_Wire
 
         """
-        Trsf = trsf_af_to_blfr(loc, pa_loc, chord, twist)
+        Trsf = trsf_af_to_blfr(loc, soy, chord, twist)
         if self.wire is None or self.BSplineLst is None:
             self.gen_OCCtopo()
 
@@ -237,28 +236,3 @@ class Airfoil(object):
         trf_af.coordinates = self.interpolate_shapes(self.coordinates, airfoil2.coordinates, k)
 
         return trf_af
-
-
-
-if __name__ == "__main__":
-    plt.close("all")
-    import yaml
-
-    with open("jobs/VariSpeed/UH-60A_adv.yml", "r") as f:
-        data = yaml.load(f.read())
-
-    airfoils = [Airfoil(af) for af in data["airfoils"]]
-
-    for af in airfoils:
-        af.gen_OCCtopo()
-
-    af1 = airfoils[0]
-    af2 = airfoils[1]
-    res = af1.transformed(af2, 1.0)
-    res.gen_OCCtopo()
-
-    with open("data1.yml", "w") as outfile:
-        yaml.dump(af1.write_yaml_airfoil(), outfile)
-
-    with open("data2.yml", "w") as outfile:
-        yaml.dump(af2.write_yaml_airfoil(), outfile)

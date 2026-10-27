@@ -58,7 +58,7 @@ flags_dict = {"flag_wt_ontology": flag_wt_ontology, "flag_ref_axes_wt": flag_ref
 #               0.26530612, 0.28571429, 0.30612245, 0.32653061, 0.34693878, 0.36734694, 0.3877551 , 0.40816327, 0.42857143, 0.44897959, 0.46938776, 0.48979592, 0.51020408,
 #               0.53061224, 0.55102041, 0.57142857, 0.59183673, 0.6122449 , 0.63265306, 0.65306122, 0.67346939, 0.69387755, 0.71428571, 0.73469388, 0.75510204, 0.7755102 ,
 #               0.79591837, 0.81632653, 0.83673469, 0.85714286, 0.87755102, 0.89795918, 0.91836735, 0.93877551, 0.95918367, 1.]
-radial_stations = np.linspace(0., 1., 10, endpoint=True)
+radial_stations = np.array([0., 0.24489796, 0.51020408, 0.7755102, 1.])  # define radial stations as fraction of total blade length (from 0 to 1)
 
 # ===== Execute SONATA Blade Component Object ===== #
 # name          - job name of current task
@@ -94,7 +94,7 @@ if not flag_estimate_structural_damping:
 else:
     mu = np.zeros(6)
 
-beam_struct_eval(flags_dict, Loads_dict, radial_stations, job, run_dir,
+beam_struct_eval(job_name, flags_dict, Loads_dict, radial_stations, job, run_dir,
                  job_str, mu)
 
 if flag_estimate_structural_damping:

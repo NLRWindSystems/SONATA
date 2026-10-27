@@ -433,13 +433,12 @@ with open(output_fname_energy, 'w') as file:
 # Order is [11, 22, 33, 23, 13, 12]
 loss_factors = {'glass_uniax' : np.array([1.49e-3, 7.16e-3, 7.16e-3,
                                        6.62e-3, 6.62e-3, 6.62e-3]),
-                'carbon_uniax' : np.array([4.32e-4, 4.614e-3, 4.614e-3,
-                                       4.669e-3, 4.669e-3, 4.669e-3]), # Imperial
+                'carbon_uniax' : np.array([4.69e-4, 5.61e-3, 5.61e-3,
+                                       5.61e-3, 5.61e-3, 5.61e-3]),
                 'glass_biax' : np.array([7.04e-3, 7.04e-3, 7.16e-3,
                                       6.62e-3, 6.62e-3, 3.01e-3]),
-                'glass_triax' : (np.array([7.04e-3, 7.04e-3, 7.16e-3,
-                                      6.62e-3, 6.62e-3, 3.01e-3]) + np.array([1.49e-3, 7.16e-3, 7.16e-3,
-                                       6.62e-3, 6.62e-3, 6.62e-3]))/2, # average of  UD and BX GFRP
+                'glass_triax' : np.array([4.05E-03, 7.00E-03, 7.16E-03,
+                                       6.62E-03, 6.62E-03, 4.82E-03]),
                 'Adhesive' : np.array([1.3e-2]*6),
                 'medium_density_foam' : np.array([1.3e-2]*6), # Same of adhesive
                 'gelcoat' : np.array([1.3e-2]*6), # same of gelcoat
@@ -475,6 +474,9 @@ sonata_zeta = 0.5 * (energy_fracs_mat @ loss_factors_vec)
 
 print("Critical damping ratios (%):")
 print(sonata_zeta*100.)
+critical_damping_ratios_file = os.path.join(run_dir, 'critical_damping_ratios.txt')
+np.savetxt(critical_damping_ratios_file, sonata_zeta*100.)
+
 
 damp_contributions = np.zeros((N_modes, len(loss_factors)))
 energy_contributions = np.zeros((N_modes, len(loss_factors)))
