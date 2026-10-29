@@ -390,13 +390,14 @@ def test_orient90_fiber0():
     # Right now, I am not convinced this is correct, but this should get
     # an exact match with ANBA.
     # Revist this later if tests stop passing.
-    mapping_signs_pm90 = np.array([1, -1, -1, -1, 1, 1])
+    # this is what passes the test, but seems to be wrong.
+    # mapping_signs_pm90 = np.array([1, -1, -1, -1, 1, 1])
     #
     # Should not need to flip any of the first three component signs.
     # Expect to need to flip the last two components, because the 1 direction is the same, but the
     # 2 and 3 are flipped so the shear only sees one sign flip
     # shear 23 sees two sign flips, so should be positive.
-    # mapping_signs_pm90 = np.array([1, 1, 1, 1, -1, -1])
+    mapping_signs_pm90 = np.array([1, 1, 1, 1, -1, -1])
 
     warnings.warn('These mapping sign flips are required for the test to pass, but seem wrong.'
         + ' Leaving this as a code stability test right now.')
