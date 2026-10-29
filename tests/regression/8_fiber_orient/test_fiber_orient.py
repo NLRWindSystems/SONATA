@@ -213,7 +213,7 @@ def calculate_6x6_stress_maps(orientation, fiber_angle, split_quads=True):
     # The SONATA model currently has the unique stations.
     # Run stress maps for each of those stations.
     job.blade_exp_stress_strain_map(output_folder=map_folder)
-    map_fname = os.path.join(map_folder, 'blade_station0000_stress_strain_map.npz')
+    map_fname = os.path.join(run_dir, map_folder, 'blade_station0000_stress_strain_map.npz')
 
     # BeamDyn blade file written by beam_struct_eval / write_beamdyn_prop as
     # os.path.join(folder_str, job_name + '_BeamDyn_Blade.dat'). Because job_name
@@ -309,7 +309,7 @@ def test_orient0_fiber0():
     bd_fname_ref = os.path.join(run_dir, job_name + '_BeamDyn_Blade.dat')
     map_folder = f'stress-maps-orient{orientation:}-fiber{fiber_angle:}-split{split_quads:}'
 
-    map_fname_ref = os.path.join('ref', map_folder, 'blade_station0000_stress_strain_map.npz')
+    map_fname_ref = os.path.join(run_dir, 'ref', map_folder, 'blade_station0000_stress_strain_map.npz')
 
     #######################
     # Compare results
@@ -345,7 +345,7 @@ def test_orient0_fiber45():
     bd_fname_ref = os.path.join(run_dir, job_name + '_BeamDyn_Blade.dat')
     map_folder = f'stress-maps-orient{orientation:}-fiber{fiber_angle:}-split{split_quads:}'
 
-    map_fname_ref = os.path.join('ref', map_folder, 'blade_station0000_stress_strain_map.npz')
+    map_fname_ref = os.path.join(run_dir, 'ref', map_folder, 'blade_station0000_stress_strain_map.npz')
 
     #######################
     # Compare results
@@ -411,7 +411,7 @@ def test_orient90_fiber0():
     bd_fname_ref_90 = os.path.join(run_dir, job_name + '_BeamDyn_Blade.dat')
     map_folder = f'stress-maps-orient{orientation:}-fiber{fiber_angle:}-split{split_quads:}'
 
-    map_fname_ref_90 = os.path.join('ref', map_folder, 'blade_station0000_stress_strain_map.npz')
+    map_fname_ref_90 = os.path.join(run_dir, 'ref', map_folder, 'blade_station0000_stress_strain_map.npz')
 
 
     orientation_ref0 = 0
@@ -421,7 +421,7 @@ def test_orient90_fiber0():
     bd_fname_ref_0 = os.path.join(run_dir, job_name + '_BeamDyn_Blade.dat')
     map_folder = f'stress-maps-orient{orientation_ref0:}-fiber{fiber_angle:}-split{split_quads:}'
 
-    map_fname_ref_0 = os.path.join('ref', map_folder, 'blade_station0000_stress_strain_map.npz')
+    map_fname_ref_0 = os.path.join(run_dir, 'ref', map_folder, 'blade_station0000_stress_strain_map.npz')
 
     #######################
     # Compare results
@@ -473,7 +473,7 @@ def test_orient90_fiber45():
     bd_fname_ref = os.path.join(run_dir, job_name + '_BeamDyn_Blade.dat')
     map_folder = f'stress-maps-orient{orientation:}-fiber{fiber_angle:}-split{split_quads:}'
 
-    map_fname_ref = os.path.join('ref', map_folder, 'blade_station0000_stress_strain_map.npz')
+    map_fname_ref = os.path.join(run_dir, 'ref', map_folder, 'blade_station0000_stress_strain_map.npz')
 
     ###########
     # 0,0 reference
@@ -485,7 +485,7 @@ def test_orient90_fiber45():
     bd_fname_ref_0 = os.path.join(run_dir, job_name + '_BeamDyn_Blade.dat')
     map_folder = f'stress-maps-orient{orientation_ref0:}-fiber{fiber_angle_ref0:}-split{split_quads:}'
 
-    map_fname_ref_0 = os.path.join('ref', map_folder, 'blade_station0000_stress_strain_map.npz')
+    map_fname_ref_0 = os.path.join(run_dir, 'ref', map_folder, 'blade_station0000_stress_strain_map.npz')
 
     #######################
     # Compare results
@@ -566,7 +566,7 @@ def test_orient40_fiber20():
     bd_fname_ref_pp = os.path.join(run_dir, job_name + '_BeamDyn_Blade.dat')
     map_folder = f'stress-maps-orient{orientation_p:}-fiber{fiber_angle_p:}-split{split_quads:}'
 
-    map_fname_ref_pp = os.path.join('ref', map_folder, 'blade_station0000_stress_strain_map.npz')
+    map_fname_ref_pp = os.path.join(run_dir, 'ref', map_folder, 'blade_station0000_stress_strain_map.npz')
 
     #################
     # +/- reference
@@ -576,7 +576,7 @@ def test_orient40_fiber20():
     bd_fname_ref_pm = os.path.join(run_dir, job_name + '_BeamDyn_Blade.dat')
     map_folder = f'stress-maps-orient{orientation_p:}-fiber{fiber_angle_m:}-split{split_quads:}'
 
-    map_fname_ref_pm = os.path.join('ref', map_folder, 'blade_station0000_stress_strain_map.npz')
+    map_fname_ref_pm = os.path.join(run_dir, 'ref', map_folder, 'blade_station0000_stress_strain_map.npz')
 
 
     #################
@@ -590,7 +590,7 @@ def test_orient40_fiber20():
     bd_fname_ref_0 = os.path.join(run_dir, job_name + '_BeamDyn_Blade.dat')
     map_folder = f'stress-maps-orient{orientation_ref0:}-fiber{fiber_angle_ref0:}-split{split_quads:}'
 
-    map_fname_ref_0 = os.path.join('ref', map_folder, 'blade_station0000_stress_strain_map.npz')
+    map_fname_ref_0 = os.path.join(run_dir, 'ref', map_folder, 'blade_station0000_stress_strain_map.npz')
 
     #######################
     # Compare results
@@ -644,4 +644,4 @@ def test_orient40_fiber20():
 
 
 if __name__ == "__main__":
-    pytest.main(["-s", "test_fiber_orient.py::test_orient40_fiber20"])
+    pytest.main(["-s", "test_fiber_orient.py"])
