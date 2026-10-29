@@ -279,7 +279,6 @@ def compare_results(bd_fname1, map_fname1, bd_fname2, map_fname2,
         < stress_rtol*np.abs(fc_to_stress_m_1).max()
 
     if expect_pass:
-
         assert np.all(strain_pass), 'Strain mapping matrices do not match.'
         assert np.all(stress_pass), 'Stress mapping matrices do not match.'
     else:
@@ -392,6 +391,12 @@ def test_orient90_fiber0():
     # an exact match with ANBA.
     # Revist this later if tests stop passing.
     mapping_signs_pm90 = np.array([1, -1, -1, -1, 1, 1])
+    #
+    # Should not need to flip any of the first three component signs.
+    # Expect to need to flip the last two components, because the 1 direction is the same, but the
+    # 2 and 3 are flipped so the shear only sees one sign flip
+    # shear 23 sees two sign flips, so should be positive.
+    # mapping_signs_pm90 = np.array([1, 1, 1, 1, -1, -1])
 
     warnings.warn('These mapping sign flips are required for the test to pass, but seem wrong.'
         + ' Leaving this as a code stability test right now.')
@@ -505,5 +510,138 @@ def test_orient90_fiber45():
 
     return
 
+
+def test_orient40_fiber20():
+
+    orientation_p = 40
+    fiber_angle_p = 20
+
+    orientation_m = -140
+    fiber_angle_m = -20
+
+    split_quads = True # False does not appear to work anymore.
+
+    bd_fname_pp,map_fname_pp = calculate_6x6_stress_maps(orientation_p,
+                                                       fiber_angle_p,
+                                                       split_quads=split_quads)
+
+    bd_fname_pm,map_fname_pm = calculate_6x6_stress_maps(orientation_p,
+                                                       fiber_angle_m,
+                                                       split_quads=split_quads)
+
+    bd_fname_mp,map_fname_mp = calculate_6x6_stress_maps(orientation_m,
+                                                       fiber_angle_p,
+                                                       split_quads=split_quads)
+
+    bd_fname_mm,map_fname_mm = calculate_6x6_stress_maps(orientation_m,
+                                                       fiber_angle_m,
+                                                       split_quads=split_quads)
+
+    # for stress/strain components these two configurations have the directions
+    # flipped for 2 and 3
+    # Right now, I am not convinced this is correct, but this should get
+    # an exact match with ANBA.
+    # Revist this later if tests stop passing.
+    #
+    # Should not need to flip any of the first three component signs.
+    # Expect to need to flip the last two components, because the 1 direction is the same, but the
+    # 2 and 3 are flipped so the shear only sees one sign flip
+    # shear 23 sees two sign flips, so should be positive.
+    mapping_signs = np.array([1, 1, 1, 1, -1, -1])
+
+    warnings.warn('These mapping sign flips are required for the test to pass, but seem wrong.'
+        + ' Leaving this as a code stability test right now.')
+
+    #######################
+    # Reference files
+
+
+    #################
+    # +/+ reference
+
+    run_dir = os.path.dirname( os.path.realpath(__file__) ) + os.sep
+
+    job_name = f'./ref/test-orient{orientation_p:}-fiber{fiber_angle_p:}-split{True:}'
+
+    bd_fname_ref_pp = os.path.join(run_dir, job_name + '_BeamDyn_Blade.dat')
+    map_folder = f'stress-maps-orient{orientation_p:}-fiber{fiber_angle_p:}-split{split_quads:}'
+
+    map_fname_ref_pp = os.path.join('ref', map_folder, 'blade_station0000_stress_strain_map.npz')
+
+    #################
+    # +/- reference
+
+    job_name = f'./ref/test-orient{orientation_p:}-fiber{fiber_angle_m:}-split{True:}'
+
+    bd_fname_ref_pm = os.path.join(run_dir, job_name + '_BeamDyn_Blade.dat')
+    map_folder = f'stress-maps-orient{orientation_p:}-fiber{fiber_angle_m:}-split{split_quads:}'
+
+    map_fname_ref_pm = os.path.join('ref', map_folder, 'blade_station0000_stress_strain_map.npz')
+
+
+    #################
+    # 0,0 reference
+
+    orientation_ref0 = 0
+    fiber_angle_ref0 = 0
+
+    job_name = f'./ref/test-orient{orientation_ref0:}-fiber{fiber_angle_ref0:}-split{True:}'
+
+    bd_fname_ref_0 = os.path.join(run_dir, job_name + '_BeamDyn_Blade.dat')
+    map_folder = f'stress-maps-orient{orientation_ref0:}-fiber{fiber_angle_ref0:}-split{split_quads:}'
+
+    map_fname_ref_0 = os.path.join('ref', map_folder, 'blade_station0000_stress_strain_map.npz')
+
+    #######################
+    # Compare results
+
+    mass_rtol = 1e-6
+    stiff_rtol = 1e-6
+    strain_rtol = 1e-6
+    stress_rtol = 1e-6
+
+    # Match orientation angle response to reference.
+    compare_results(bd_fname_ref_pp, map_fname_ref_pp, bd_fname_pp, map_fname_pp,
+                    expect_pass=True,
+                    mass_rtol=mass_rtol, stiff_rtol=stiff_rtol,
+                    strain_rtol=strain_rtol, stress_rtol=stress_rtol)
+
+    # Flipping both angles should get back to the same results
+    compare_results(bd_fname_pp, map_fname_pp, bd_fname_mm, map_fname_mm,
+                    expect_pass=True,
+                    mass_rtol=mass_rtol, stiff_rtol=stiff_rtol,
+                    strain_rtol=strain_rtol, stress_rtol=stress_rtol,
+                    mapping_signs=mapping_signs)
+
+
+    # Reference check for flipping only one angle
+    compare_results(bd_fname_ref_pm, map_fname_ref_pm, bd_fname_pm, map_fname_pm,
+                    expect_pass=True,
+                    mass_rtol=mass_rtol, stiff_rtol=stiff_rtol,
+                    strain_rtol=strain_rtol, stress_rtol=stress_rtol)
+
+    # Results should match regardless of which angle is flipped
+    compare_results(bd_fname_pm, map_fname_pm, bd_fname_mp, map_fname_mp,
+                    expect_pass=True,
+                    mass_rtol=mass_rtol, stiff_rtol=stiff_rtol,
+                    strain_rtol=strain_rtol, stress_rtol=stress_rtol,
+                    mapping_signs=mapping_signs)
+
+    # Results should be different between positive and negative fiber angles
+    compare_results(bd_fname_pp, map_fname_pp, bd_fname_pm, map_fname_pm,
+                    expect_pass=False,
+                    mass_rtol=mass_rtol, stiff_rtol=stiff_rtol,
+                    strain_rtol=strain_rtol, stress_rtol=stress_rtol)
+
+    # Test should be able to tell the difference between orientation 0 and 90
+    compare_results(bd_fname_ref_0, map_fname_ref_0, bd_fname_pp, map_fname_pp,
+                    expect_pass=False,
+                    mass_rtol=mass_rtol, stiff_rtol=stiff_rtol,
+                    strain_rtol=strain_rtol, stress_rtol=stress_rtol)
+
+    return
+
+
+
 if __name__ == "__main__":
-    pytest.main(["-s", "test_fiber_orient.py"])
+    pytest.main(["-s", "test_fiber_orient.py::test_orient40_fiber20"])
