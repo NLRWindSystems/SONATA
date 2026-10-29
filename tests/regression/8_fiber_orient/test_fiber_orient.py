@@ -447,5 +447,63 @@ def test_orient90_fiber0():
 
     return
 
+
+def test_orient90_fiber45():
+
+    orientation = 90
+    fiber_angle = 45
+    split_quads = True # False does not appear to work anymore.
+
+    bd_fname_p45,map_fname_p45 = calculate_6x6_stress_maps(orientation,
+                                                        fiber_angle,
+                                                        split_quads=split_quads)
+
+    #######################
+    # Reference files
+
+    run_dir = os.path.dirname( os.path.realpath(__file__) ) + os.sep
+
+    job_name = f'./ref/test-orient{orientation:}-fiber{fiber_angle:}-split{True:}'
+
+    bd_fname_ref = os.path.join(run_dir, job_name + '_BeamDyn_Blade.dat')
+    map_folder = f'stress-maps-orient{orientation:}-fiber{fiber_angle:}-split{split_quads:}'
+
+    map_fname_ref = os.path.join('ref', map_folder, 'blade_station0000_stress_strain_map.npz')
+
+    ###########
+    # 0,0 reference
+    fiber_angle_ref0 = 0
+    orientation_ref0 = 0
+
+    job_name = f'./ref/test-orient{orientation_ref0:}-fiber{fiber_angle_ref0:}-split{True:}'
+
+    bd_fname_ref_0 = os.path.join(run_dir, job_name + '_BeamDyn_Blade.dat')
+    map_folder = f'stress-maps-orient{orientation_ref0:}-fiber{fiber_angle_ref0:}-split{split_quads:}'
+
+    map_fname_ref_0 = os.path.join('ref', map_folder, 'blade_station0000_stress_strain_map.npz')
+
+    #######################
+    # Compare results
+
+    mass_rtol = 1e-6
+    stiff_rtol = 1e-6
+    strain_rtol = 1e-6
+    stress_rtol = 1e-6
+
+    # Match fiber angle response to reference.
+    compare_results(bd_fname_ref, map_fname_ref, bd_fname_p45, map_fname_p45,
+                    expect_pass=True,
+                    mass_rtol=mass_rtol, stiff_rtol=stiff_rtol,
+                    strain_rtol=strain_rtol, stress_rtol=stress_rtol)
+
+    # Test should be able to tell the difference between going the correct
+    # and incorrect way for the fiber angle, at same tolerances
+    compare_results(bd_fname_ref_0, map_fname_ref_0, bd_fname_p45, map_fname_p45,
+                    expect_pass=False,
+                    mass_rtol=mass_rtol, stiff_rtol=stiff_rtol,
+                    strain_rtol=strain_rtol, stress_rtol=stress_rtol)
+
+    return
+
 if __name__ == "__main__":
     pytest.main(["-s", "test_fiber_orient.py"])
