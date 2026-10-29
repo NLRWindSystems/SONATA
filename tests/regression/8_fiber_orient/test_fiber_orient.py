@@ -212,7 +212,7 @@ def calculate_6x6_stress_maps(orientation, fiber_angle, split_quads=True):
 
     # The SONATA model currently has the unique stations.
     # Run stress maps for each of those stations.
-    job.blade_exp_stress_strain_map(output_folder=map_folder)
+    job.blade_exp_stress_strain_map(output_folder=os.path.join(run_dir, map_folder))
     map_fname = os.path.join(run_dir, map_folder, 'blade_station0000_stress_strain_map.npz')
 
     # BeamDyn blade file written by beam_struct_eval / write_beamdyn_prop as
