@@ -22,7 +22,7 @@ SONATA is primarily developed with the support of the U.S. Department of Energy 
 ## Installation
 SONATA can be run on mac and linux machines. No Windows installation is supported at the moment. We make use of Anaconda, which is a commonly used package manager for Python. Download and install the latest anaconda version [here](https://docs.anaconda.com/anaconda/install/)
 
-First setup an anaconda environment, here named sonata-env, activate it, and add the pythonocc library (v7.4.1).
+First setup an anaconda environment, here named sonata-env and activate it.
 You should do this in the folder that you want to clone SONATA to.
 
 ```
@@ -39,8 +39,8 @@ cd ..
 Next, in the same conda environment compile b3_secfem4 (open-source)
 
 ```
-git clone git@github.com:gbarter/b3_secfem4.git # (or git clone https://github.com/gbarter/b3_secfem4.git)
-cd b3_secfem4
+git clone git@github.com:NLRWindSystems/b3_secfem.git # (or git clone https://github.com/NLRWindSystems/b3_secfem.git)
+cd b3_secfem
 pip install -e .
 cd ..
 ```
