@@ -8,13 +8,13 @@ Created on Thu Jan 19 11:01:06 2017
 import os
 import math
 # Third party modules
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.io
 from matplotlib.collections import PatchCollection
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import Polygon
-import matplotlib.cm as cm
 
 
 # First party modules
@@ -48,7 +48,7 @@ def plot_mesh(nodes, elements, theta_11, data, data_name, materials,
     """
     alpha = 1.
     if "cmap" in kw:
-        cmap = plt.cm.get_cmap(kw["cmap"])
+        cmap = mpl.colormaps.get_cmap(kw["cmap"])
 
     elif data_name == "sf":
         colors = [(0.6, 0, 0), (1, 1, 0), (0, 0.5, 0)]  # R -> G -> B
@@ -57,14 +57,14 @@ def plot_mesh(nodes, elements, theta_11, data, data_name, materials,
         cmap_name, colors, N=6)
 
     elif data_name == 'MatID':
-        cmap = plt.cm.get_cmap()
+        cmap = mpl.colormaps.get_cmap('viridis')
         # extract all colors from the .jet map
         cmaplist = [cmap(i) for i in range(cmap.N)]
         cmap = LinearSegmentedColormap.from_list('Custom cmap', cmaplist, max(data))
 
-        cmap = cm.get_cmap('tab20',max(data))
+        cmap = mpl.colormaps['tab20'].resampled(max(data))
     else:
-        cmap = plt.cm.get_cmap()
+        cmap = mpl.colormaps.get_cmap('viridis')
 
 
     show_beam_props = kw.get('show_beam_props', True)

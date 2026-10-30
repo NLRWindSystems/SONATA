@@ -29,16 +29,19 @@ You should do this in the folder that you want to clone SONATA to.
 conda config --add channels conda-forge
 git clone git@github.com:NLRWindSystems/SONATA.git
 cd SONATA
-git checkout wr1_b3
 
 conda env create --name sonata-env -f environment.yaml
 conda activate sonata-env
 cd ..
 ```
 
-Next, in the same conda environment compile b3_secfem4 (open-source)
+Next, in the same conda environment compile the libraries b3_mat and b3_secfem (both open-source)
 
 ```
+git clone git@github.com:NLRWindSystems/b3_mat.git # (or git clone https://github.com/NLRWindSystems/b3_mat.git)
+cd b3_mat
+pip install -e .
+cd ..
 git clone git@github.com:NLRWindSystems/b3_secfem.git # (or git clone https://github.com/NLRWindSystems/b3_secfem.git)
 cd b3_secfem
 pip install -e .
