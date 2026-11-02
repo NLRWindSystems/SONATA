@@ -2,14 +2,8 @@
 Tests that verify fiber orientation behavior remains
 consistent for future versions of SONATA.
 
-Note: This test does not verify correctness,
-just that the calculations of SONATA are stable.
-
-The sign mapping flips for shear may be incorrect.
-These are written as tests to verify SONATA is stable, not necessarily correct.
-
-These seem to be a concern when they also require flipping the normal stresses/strains
-(see mapping_signs_pm90)
+Tests also consider a number of symmetries to check
+consistency of stress/strain maps.
 
 """
 
@@ -17,7 +11,6 @@ import os
 import sys
 import numpy as np
 import pytest
-import warnings
 
 from SONATA.classBlade import Blade
 from SONATA.utl.beam_struct_eval import beam_struct_eval
@@ -269,8 +262,9 @@ def compare_results(bd_fname1, map_fname1, bd_fname2, map_fname2,
     fc_to_strain_m_1 = map1['fc_to_strain_m']
     fc_to_stress_m_1 = map1['fc_to_stress_m']
 
-    fc_to_strain_m_2 = map2['fc_to_strain_m'] * mapping_signs.reshape(1, -1, 1)
-    fc_to_stress_m_2 = map2['fc_to_stress_m'] * mapping_signs.reshape(1, -1, 1)
+    # Maps are (stress/strain, force, element) for the three indices.
+    fc_to_strain_m_2 = map2['fc_to_strain_m'] * mapping_signs.reshape(-1, 1, 1)
+    fc_to_stress_m_2 = map2['fc_to_stress_m'] * mapping_signs.reshape(-1, 1, 1)
 
     strain_pass = np.abs(fc_to_strain_m_1 - fc_to_strain_m_2) \
         < strain_rtol*np.abs(fc_to_strain_m_1).max()
@@ -385,22 +379,16 @@ def test_orient90_fiber0():
                                                         fiber_angle,
                                                         split_quads=split_quads)
 
-    # for stress/strain components these two configurations have the directions
-    # flipped for 2 and 3
-    # Right now, I am not convinced this is correct, but this should get
-    # an exact match with ANBA.
-    # Revist this later if tests stop passing.
-    # this is what passes the test, but seems to be wrong.
-    # mapping_signs_pm90 = np.array([1, -1, -1, -1, 1, 1])
+    # Given the symmetry, some stress/strain components may need sign flips.
     #
     # Should not need to flip any of the first three component signs.
-    # Expect to need to flip the last two components, because the 1 direction is the same, but the
+    # Having two indices for e.g., 11 means it sees a sign flip twice.
+    #
+    # Expect to need to flip the last two components,
+    # because the 1 direction is the same, but the
     # 2 and 3 are flipped so the shear only sees one sign flip
     # shear 23 sees two sign flips, so should be positive.
     mapping_signs_pm90 = np.array([1, 1, 1, 1, -1, -1])
-
-    warnings.warn('These mapping sign flips are required for the test to pass, but seem wrong.'
-        + ' Leaving this as a code stability test right now.')
 
     #######################
     # Reference files
@@ -538,20 +526,17 @@ def test_orient40_fiber20():
                                                        fiber_angle_m,
                                                        split_quads=split_quads)
 
-    # for stress/strain components these two configurations have the directions
-    # flipped for 2 and 3
-    # Right now, I am not convinced this is correct, but this should get
-    # an exact match with ANBA.
-    # Revist this later if tests stop passing.
+
+    # Given the symmetry, some stress/strain components may need sign flips.
     #
     # Should not need to flip any of the first three component signs.
-    # Expect to need to flip the last two components, because the 1 direction is the same, but the
+    # Having two indices for e.g., 11 means it sees a sign flip twice.
+    #
+    # Expect to need to flip the last two components,
+    # because the 1 direction is the same, but the
     # 2 and 3 are flipped so the shear only sees one sign flip
     # shear 23 sees two sign flips, so should be positive.
     mapping_signs = np.array([1, 1, 1, 1, -1, -1])
-
-    warnings.warn('These mapping sign flips are required for the test to pass, but seem wrong.'
-        + ' Leaving this as a code stability test right now.')
 
     #######################
     # Reference files
@@ -645,4 +630,5 @@ def test_orient40_fiber20():
 
 
 if __name__ == "__main__":
-    pytest.main(["-s", "test_fiber_orient.py"])
+    # pytest.main(["-s", "test_fiber_orient.py::test_orient40_fiber20"])
+    pytest.main(["-s", os.path.realpath(__file__)])
