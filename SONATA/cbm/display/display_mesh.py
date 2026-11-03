@@ -8,13 +8,13 @@ Created on Thu Jan 19 11:01:06 2017
 import os
 import math
 # Third party modules
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.io
 from matplotlib.collections import PatchCollection
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import Polygon
-import matplotlib.cm as cm
 
 
 # First party modules
@@ -31,7 +31,7 @@ def centroid(points):
     return centroid
 
 def plot_mesh(nodes, elements, theta_11, data, data_name, materials,
-              title=None, VABSProperties=None,
+              title=None, Properties=None,
               show_element_number=False, show_node_number=False,
               invert_xaxis = True, lfactor=0.5e-2, **kw):
 
@@ -48,7 +48,7 @@ def plot_mesh(nodes, elements, theta_11, data, data_name, materials,
     """
     alpha = 1.
     if "cmap" in kw:
-        cmap = plt.cm.get_cmap(kw["cmap"])
+        cmap = mpl.colormaps.get_cmap(kw["cmap"])
 
     elif data_name == "sf":
         colors = [(0.6, 0, 0), (1, 1, 0), (0, 0.5, 0)]  # R -> G -> B
@@ -57,14 +57,14 @@ def plot_mesh(nodes, elements, theta_11, data, data_name, materials,
         cmap_name, colors, N=6)
 
     elif data_name == 'MatID':
-        cmap = plt.cm.get_cmap()
+        cmap = mpl.colormaps.get_cmap('viridis')
         # extract all colors from the .jet map
         cmaplist = [cmap(i) for i in range(cmap.N)]
         cmap = LinearSegmentedColormap.from_list('Custom cmap', cmaplist, max(data))
 
-        cmap = cm.get_cmap('tab20',max(data))
+        cmap = mpl.colormaps['tab20'].resampled(max(data))
     else:
-        cmap = plt.cm.get_cmap()
+        cmap = mpl.colormaps.get_cmap('viridis')
 
 
     show_beam_props = kw.get('show_beam_props', True)
@@ -142,27 +142,27 @@ def plot_mesh(nodes, elements, theta_11, data, data_name, materials,
         for i, item in enumerate(nodes):
             ax.annotate(i + 1, (item[0], item[1]), color="red")
 
-    if (VABSProperties is not None) and show_beam_props:
+    if (Properties is not None) and show_beam_props:
         pass
-        (CG,) = plt.plot(VABSProperties.Xm[0], VABSProperties.Xm[1], "ro", label="CG: Mass Center")
-        # ax.annotate('CG', (VABSProperties.Xm2,VABSProperties.Xm3),fontsize=20)
-        (NA,) = plt.plot(VABSProperties.Xt[0], VABSProperties.Xt[1], "gs", label="NA: Neutral Axes")
-        # ax.annotate('NA', (VABSProperties.Xt2,VABSProperties.Xt3),fontsize=20)
+        (CG,) = plt.plot(Properties.Xm[0], Properties.Xm[1], "ro", label="CG: Mass Center")
+        # ax.annotate('CG', (Properties.Xm2,Properties.Xm3),fontsize=20)
+        (NA,) = plt.plot(Properties.Xt[0], Properties.Xt[1], "gs", label="NA: Neutral Axes")
+        # ax.annotate('NA', (Properties.Xt2,Properties.Xt3),fontsize=20)
 
         GC_defined = False
-        if VABSProperties.Xg is not None:
-            (GC,) = plt.plot(VABSProperties.Xg[0], VABSProperties.Xg[1], "b^",
+        if Properties.Xg is not None:
+            (GC,) = plt.plot(Properties.Xg[0], Properties.Xg[1], "b^",
                              label="GC: Geometric Center")
-            # ax.annotate('GC', (VABSProperties.Xg2,VABSProperties.Xg3),fontsize=20)
+            # ax.annotate('GC', (Properties.Xg2,Properties.Xg3),fontsize=20)
             plt.legend(handles=[CG, GC, NA])
             GC_defined = True
         else:
             plt.legend(handles=[CG, NA])
 
-        if isinstance(VABSProperties.Xs, np.ndarray):
-            (SC,) = plt.plot(VABSProperties.Xs[0], VABSProperties.Xs[1], "kD",
+        if isinstance(Properties.Xs, np.ndarray):
+            (SC,) = plt.plot(Properties.Xs[0], Properties.Xs[1], "kD",
                              label="SC: Generalized Shear Center")
-            # ax.annotate('SC', (VABSProperties.Xs2,VABSProperties.Xs3),fontsize=20)
+            # ax.annotate('SC', (Properties.Xs2,Properties.Xs3),fontsize=20)
 
             if GC_defined:
                 plt.legend(handles=[CG, GC, NA, SC])
@@ -178,7 +178,7 @@ def plot_mesh(nodes, elements, theta_11, data, data_name, materials,
 
     return (fig,ax)
 
-def plot_cells(cells,nodes, attr1, materials, VABSProperties=None,
+def plot_cells(cells,nodes, attr1, materials, Properties=None,
                title='None', plotTheta11=False, plotDisplacement=False, **kw):
     """
 
@@ -193,7 +193,7 @@ def plot_cells(cells,nodes, attr1, materials, VABSProperties=None,
         DESCRIPTION.
     materials : TYPE
         DESCRIPTION.
-    VABSProperties : TYPE, optional
+    Properties : TYPE, optional
         DESCRIPTION. The default is None.
     title : TYPE, optional
         DESCRIPTION. The default is 'None'.
@@ -250,7 +250,7 @@ def plot_cells(cells,nodes, attr1, materials, VABSProperties=None,
 
 
     fig,ax = plot_mesh(nodes_array, element_array, theta_11, data, data_name,
-                       materials, title, VABSProperties, **kw)
+                       materials, title, Properties, **kw)
 
     if 'savepath' in kw:
 
