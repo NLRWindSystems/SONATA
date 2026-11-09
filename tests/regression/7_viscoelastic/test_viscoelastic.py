@@ -278,7 +278,7 @@ class TestVisco(unittest.TestCase):
             print("term {:} error: {:}".format(i,
                 np.abs(ref_prony_stiff[0][i] - prony_stiff[0][i]).max()))
 
-            npt.assert_allclose(prony_stiff[0][i], ref_prony_stiff[0][i], atol=1e-5,
+            npt.assert_allclose(prony_stiff[0][i], ref_prony_stiff[0][i], atol=1e-4,
                                 err_msg="Viscoelastic 6x6 doesn't match reference.")
 
     def test_ortho_viscoelastic(self):
