@@ -32,26 +32,7 @@ cd SONATA
 
 conda env create --name sonata-env -f environment.yaml
 conda activate sonata-env
-cd ..
-```
 
-Next, in the same conda environment compile the libraries b3_mat and b3_secfem (both open-source)
-
-```
-git clone git@github.com:NLRWindSystems/b3_mat.git # (or git clone https://github.com/NLRWindSystems/b3_mat.git)
-cd b3_mat
-pip install -e .
-cd ..
-git clone git@github.com:NLRWindSystems/b3_secfem.git # (or git clone https://github.com/NLRWindSystems/b3_secfem.git)
-cd b3_secfem
-pip install -e .
-cd ..
-```
-
-Go back to where you cloned SONATA and type:
-
-```
-cd SONATA
 pip install -e .
 ```
 

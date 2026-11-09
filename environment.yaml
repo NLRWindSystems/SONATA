@@ -20,6 +20,9 @@ dependencies:
   - fenics-dolfinx
   - mpi4py
   - py-triangle
+  - pip:
+    - git+https://github.com/NLRWindSystems/b3_mat.git@0.1
+    - git+https://github.com/NLRWindSystems/b3_secfem.git@0.2.0
 
 
 variables:
