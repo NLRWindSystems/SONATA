@@ -278,7 +278,7 @@ class TestVisco(unittest.TestCase):
             print("term {:} error: {:}".format(i,
                 np.abs(ref_prony_stiff[0][i] - prony_stiff[0][i]).max()))
 
-            npt.assert_allclose(prony_stiff[0][i], ref_prony_stiff[0][i], rtol=1e-2, atol=1e-5,
+            npt.assert_allclose(prony_stiff[0][i], ref_prony_stiff[0][i], atol=1e-5,
                                 err_msg="Viscoelastic 6x6 doesn't match reference.")
 
     def test_ortho_viscoelastic(self):
@@ -402,11 +402,11 @@ class TestVisco(unittest.TestCase):
         # total used in warping field, 6x6 matrices should add to match.
         tot_prony = prony_stiff[0][0]
 
-        npt.assert_allclose(tot_prony[:3], stiff[0][:3], rtol=1e-2,
+        npt.assert_allclose(tot_prony[:3], stiff[0][:3], atol=5e-6, rtol=1e-20,
                             err_msg="First 3 rows of viscoelastic do not add to match the elastic.")
 
         npt.assert_allclose(tot_prony[3:], stiff[0][3:],
-                           atol=1e-4*tot_prony[3:].max(), rtol=1e-2,
+                           atol=1e-4*tot_prony[3:].max(), rtol=1e-20,
                            err_msg="Last 3 rows of viscoelastic do not add to match the elastic.")
 
 if __name__ == "__main__":

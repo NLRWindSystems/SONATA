@@ -4,13 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "SONATA"
-version = "0.3.6"
-authors = [{name = "Tobias Pflumm", email = "tobias.pflumm@tum.de"}]
-maintainers = [{name = "Pietro Bortolotti", email = "pietro.bortolotti@nlr.gov"}]
+version = "3.0.0"
+authors = [{name = "Pietro Bortolotti", email = "pietro.bortolotti@nlr.gov"},
+{name = "Justin Porter", email = "justin.porter@nlr.gov"}]
+maintainers = [{name = "Pietro Bortolotti", email = "pietro.bortolotti@nlr.gov"},
+{name = "Justin Porter", email = "justin.porter@nlr.gov"}]
 description = "Multidiciplinary Rotor Blade Design Environment for Structural Optimization and Aeroelastic Analysis"
 readme = "README.md"
-requires-python = ">=3.9"
-license = {text = "MIT"}
+requires-python = ">=3.13"
+license = {text = "LGPL-3.0-or-later"}
 keywords = ["Helicopter","Rotor Blade","OpenMMDAO","Preprocessor","SONATA", "b3_secfem"]
 classifiers = [  # Optional
   # How mature is this project? Common values are
@@ -23,16 +25,12 @@ classifiers = [  # Optional
   "Intended Audience :: Science/Research",
   "Topic :: Scientific/Engineering",
 
-  "License :: OSI Approved :: Apache Software License",
+  "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
 
   # Specify the Python versions you support here. In particular, ensure
   # that you indicate you support Python 3. These classifiers are *not*
-  # checked by "pip install". See instead "python_requires" below.
+  # checked by "pip install". See instead "requires-python" above.
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
   "Programming Language :: Python :: 3 :: Only",
@@ -43,8 +41,11 @@ dependencies = [
   "numpy",
   "scipy",
   "openmdao",
-  "windio",
+  "windIO",
   "matplotlib",
+  "shapely",
+  "pyyaml",
+  "intervaltree",
 ]
 
 [project.urls]  # Optional
