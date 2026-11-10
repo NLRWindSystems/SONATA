@@ -18,7 +18,7 @@ jobs:
       fail-fast: False
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: ["3.11"]
+        python-version: ["3.13", "3.14"]
 
     steps:
       - name: checkout repository
@@ -35,12 +35,6 @@ jobs:
           environment-file: environment.yaml
           activate-environment: test
           auto-activate-base: false
-
-      - name: Download and install anba
-        run: |
-          git clone https://github.com/ANBA4/anba4.git
-          cd anba4
-          pip install -e .
 
       - name: Install SONATA
         run: |
