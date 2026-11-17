@@ -226,7 +226,10 @@ def grab_nodes_on_BSplineLst(nodes, BSplineLst, tolerance=1e-5):
     disco_nodes = []
     for n in nodes:
         for idx, item in enumerate(BSplineLst):
-            projection = Geom2dAPI_ProjectPointOnCurve(n.Pnt2d, item)
+            try:
+                projection = Geom2dAPI_ProjectPointOnCurve(n.Pnt2d, item)
+            except ValueError:
+                continue
             for j in range(1, projection.NbPoints() + 1):
                 if projection.Distance(j) <= tolerance:
                     n.parameters[1] = idx
