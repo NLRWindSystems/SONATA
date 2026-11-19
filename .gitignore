@@ -35,6 +35,8 @@ license
 *.lin
 *.ech
 *.sum*
+*.h5
+*.xdmf
 
 # may want to force commit some .dat files, but there are lots of auto generated ones.
 *.dat

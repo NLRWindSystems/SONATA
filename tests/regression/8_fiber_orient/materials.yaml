@@ -1,0 +1,109 @@
+name: Box_Beam
+windIO_version: '2.1.1'
+assembly:
+    number_of_blades: 1
+components:
+    blade:
+        reference_axis:
+            x:
+                grid: [0.0, 1.0]
+                values: [0.0, 0.0]
+            y:
+                grid: [0.0, 1.0]
+                values: [0.0, 0.0]
+            z:
+                grid: [0.0, 1.0]
+                values: [0.0, 25.0]
+        outer_shape:
+            chord:
+                grid: [0.0, 1.0]
+                values: [2., 2.]
+            twist:
+                grid: [0.0, 1.0]
+                values: [0.0, 0.0]
+                # Can use this to verify the SONATA applying twist option:
+                # values: [0.17453292519943295, 0.17453292519943295]
+            section_offset_y:
+                grid: [0.0, 1.0]
+                values: [1., 1.]
+            rthick:
+                grid: [0.0, 1.0]
+                values: [0.5, 0.5]
+            airfoils:
+               -  name: rectangular
+                  spanwise_position: 0.0
+                  configuration:
+                     -  default
+                  weight: [1.0]
+               -  name: rectangular
+                  spanwise_position: 1.0
+                  configuration:
+                     -  default
+                  weight: [1.0]
+        structure:
+            layers:
+               -  name: Shell_skin1
+                  material: TestMaterial
+                  fiber_orientation:
+                      grid: [0.0, 1.0]
+                      values: [15.0, 15.0]
+                  thickness:
+                      grid: [0.0, 1.0]
+                      values: [0.001, 0.001]
+                  start_nd_arc:
+                      anchor:
+                          name: TE
+                          handle: start_nd_arc
+                  end_nd_arc:
+                      anchor:
+                          name: TE
+                          handle: end_nd_arc
+            anchors:
+               -  name: TE
+                  start_nd_arc:
+                      grid: [0.0, 1.0]
+                      values: [0.0, 0.0]
+                  end_nd_arc:
+                      grid: [0.0, 1.0]
+                      values: [1.0, 1.0]
+airfoils:
+   -  name: rectangular
+      coordinates: # follow s-coordinate along the outer profile of the structure
+           x: [1.0, 1.0, 0.0, 0.0,  1.0, 1.0]   # in SI units - mm - box beam analogous to Popescu/Hodges 2000 paper p. 551/552 & Hodges 1992 paper
+           y: [0.0, 0.25,  0.25, -0.25, -0.25, 0.0]
+      rthick: 0.5000
+      aerodynamic_center: 0.5000
+      polars:  # dummy 2pi polars (not used in example)
+         -  configuration: Default
+            re_sets:
+                - re: 3.00E+06
+                  cm:
+                      grid: [-3.141592653589793, 3.141592653589793]
+                      values: [0.0, 0.0]
+                  cl:
+                      grid: [-3.141592653589793, 3.141592653589793]
+                      values: [0.0, 0.0]
+                  cd:
+                      grid: [-3.141592653589793, 3.141592653589793]
+                      values: [0.5, 0.5]
+materials:
+   -  name: TestMaterial
+      E: [114500000000.0, 8390000000.0, 4390000000.0]
+      G: [5990000000.0, 4990000000.0, 2990000000.0]
+      rho: 1220.0
+      orth: 1
+      nu: [0.27, 0.1, 0.4]
+      Xt: [1546.e+6, 0.0, 0.0]
+      Xc: [1047.e+6, 0.0, 0.0]
+      S: [0.0, 0.0, 0.0]
+      m: 16.1
+      GIc: 0.0
+      GIIc: 0.0
+      alp0: 0.0
+      fvf: 0.1076923076923077 #0.5384615384615385
+      fwf: 0.15889029003783103 #0.6461538461538463
+      ply_t: 0.005158730158730159 #0.0010317460317460314
+      unit_cost: 30.
+      waste: 0.05
+      fiber_density: 1800.
+      area_density_dry: 1.000
