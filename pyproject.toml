@@ -1,5 +1,83 @@
-# pyproject.toml
-[tool.pytest.ini_options]
-testpaths = [
-    "tests",
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "SONATA"
+version = "3.0.0"
+authors = [{name = "Pietro Bortolotti", email = "pietro.bortolotti@nlr.gov"},
+{name = "Justin Porter", email = "justin.porter@nlr.gov"}]
+maintainers = [{name = "Pietro Bortolotti", email = "pietro.bortolotti@nlr.gov"},
+{name = "Justin Porter", email = "justin.porter@nlr.gov"}]
+description = "Multidiciplinary Rotor Blade Design Environment for Structural Optimization and Aeroelastic Analysis"
+readme = "README.md"
+requires-python = ">=3.13"
+license = {text = "LGPL-3.0-or-later"}
+keywords = ["Helicopter","Rotor Blade","OpenMMDAO","Preprocessor","SONATA", "b3_secfem"]
+classifiers = [  # Optional
+  # How mature is this project? Common values are
+  #   3 - Alpha
+  #   4 - Beta
+  #   5 - Production/Stable
+  "Development Status :: 4 - Beta",
+
+  # Indicate who your project is intended for
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering",
+
+  "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+
+  # Specify the Python versions you support here. In particular, ensure
+  # that you indicate you support Python 3. These classifiers are *not*
+  # checked by "pip install". See instead "requires-python" above.
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Fortran",
 ]
+
+dependencies = [
+  "numpy",
+  "scipy",
+  "openmdao",
+  "windIO",
+  "matplotlib",
+  "shapely",
+  "pyyaml",
+  "intervaltree",
+]
+
+[project.urls]  # Optional
+#"Homepage" = "https://gitlab.lrz.de/rfeil/SONATA"
+"Homepage" = "https://github.com/NLRWindSystems/SONATA"
+# This is configuration specific to the `setuptools` build backend.
+# If you are using a different build backend, you will need to change this.
+
+[tool.setuptools]
+zip-safe = true
+include-package-data = true
+
+#[tool.setuptools.packages]
+#find = {}
+
+[tool.setuptools.packages.find]
+exclude = ["docs", "test"]
+namespaces = true
+
+[tool.setuptools.package-data]
+# If there are data files included in your packages that need to be
+# installed, specify them here.
+"*" = ["*.yaml", "*.xlsx", "*.txt"]
+
+[tool.pytest]
+addopts = ["--doctest-modules"]
+testpaths = ["tests"]
+
+[pydocstyle]
+convention = "numpy"
+match_dir = "SONATA"
+
+[tool.cibuildwheel]
+skip = ["cp36-*", "cp37-*", "cp38-*", "*-win32"]
+build-frontend = "build"

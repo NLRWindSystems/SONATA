@@ -18,29 +18,28 @@ jobs:
       fail-fast: False
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: ["3.11"]
+        python-version: ["3.13", "3.14"]
 
     steps:
       - name: checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Install miniconda
-        uses: conda-incubator/setup-miniconda@v2
-        # https://github.com/marketplace/actions/setup-miniconda
+      - name: Install mamba
+        uses: conda-incubator/setup-miniconda@v3
+        # Using mamba for faster, more reliable dependency resolution
         with:
-          miniconda-version: "latest"
+          miniforge-version: latest
+          use-mamba: true
+          mamba-version: "*"
           channels: conda-forge
-          auto-update-conda: true
+          channel-priority: flexible
           python-version: ${{ matrix.python-version }}
           environment-file: environment.yaml
           activate-environment: test
           auto-activate-base: false
+          cache-environment: true
+          cache-environment-key: ${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/environment.yaml') }}
 
-      - name: Download and install anba
-        run: |
-          git clone https://github.com/ANBA4/anba4.git
-          cd anba4
-          pip install -e .
 
       - name: Install SONATA
         run: |
